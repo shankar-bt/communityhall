@@ -1,10 +1,8 @@
 import { useApp } from "@/contexts/AppContext";
-import { useLanguage } from "@/contexts/LanguageContext";
 import { Globe, Building2 } from "lucide-react";
 
 export function TopBar({ onLogout }: { onLogout?: () => void }) {
-  const { user } = useApp();
-  const { t, lang, setLang } = useLanguage();
+  const { user, t, lang, setLang } = useApp();
 
   return (
     <header className="sticky top-0 z-40 bg-white border-b border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)]">
@@ -22,7 +20,7 @@ export function TopBar({ onLogout }: { onLogout?: () => void }) {
         {/* Center: Title */}
         <div className="hidden md:flex items-center gap-2 text-[#1e3a8a] absolute left-1/2 -translate-x-1/2">
           <Building2 className="h-6 w-6 stroke-[2.5]" />
-          <h2 className="text-xl font-bold tracking-tight">{t("Community Hall Booking")}</h2>
+          <h2 className="text-xl font-bold tracking-tight">{t("appName")}</h2>
         </div>
 
         {/* Right: Actions */}

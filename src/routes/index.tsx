@@ -38,7 +38,10 @@ function App() {
 
   if (!user) {
     return (
-      <AuthScreen onSuccess={() => setView("list")} />
+      <AuthScreen onSuccess={() => {
+        setUser({ name: "Citizen User", contact: "9876543210", role: "citizen" });
+        setView("list");
+      }} />
     );
   }
 

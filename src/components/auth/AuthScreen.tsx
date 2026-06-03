@@ -1,285 +1,604 @@
-import { useState } from "react";
-import { useApp } from "@/contexts/AppContext";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { motion, AnimatePresence } from "framer-motion";
 import {
-  Building2,
-  Smartphone,
-  UserPlus,
   User,
   Phone,
-  Globe,
   ShieldCheck,
+  Globe,
+  Clock3,
+  BadgeCheck,
   Users,
-  Shield,
-  CheckCircle2,
-  Headset,
-  Fingerprint
+  CheckCircle,
+  UserPlus,
 } from "lucide-react";
-import { toast } from "sonner";
-import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
+import { useState, useEffect } from "react";
+import "./AuthPage.css";
 
-type Mode = "login" | "register";
+const translations = {
+  en: {
+    heroTitle: <>Digital Services for<br />Every Citizen.</>,
+    heroSubtitle: <>One Portal for all Government Services<br />and Citizen Welfare</>,
+    secure: "Secure",
+    secureSub: "Your data is safe with us",
+    accessible: "Accessible",
+    accessibleSub: "Anytime, Anywhere",
+    simplified: "Simplified",
+    simplifiedSub: "Easy Access to services",
+    trusted: "Trusted",
+    trustedSub: "Official Govt. Platform",
+    loginTitle: "Log Into Your Account",
+    loginTab: "Login with OTP",
+    registerTab: "Register",
+    username: "Username",
+    usernamePlaceholder: "Enter your User Name",
+    mobileNumber: "Mobile Number",
+    mobilePlaceholder: "Enter your Mobile Number",
+    sendOtp: "Send OTP",
+    loginBtn: "Login",
+    fullName: "Full Name",
+    fullNamePlaceholder: "Enter your Full Name",
+    email: "Email Address",
+    emailPlaceholder: "Enter your Email",
+    registerBtn: "Register",
+    enterOtp: "Enter OTP",
+    enterOtpPlaceholder: "Enter 6-digit OTP",
+    verifyLoginBtn: "Verify & Login",
+    verifyRegisterBtn: "Verify & Register",
+    resendOtp: "Resend OTP",
+    trustSecure: "100 % Secure",
+    trustSecureSub: "End to End Encryption",
+    trustVerified: "Verified Platform",
+    trustVerifiedSub: "Official Government Website",
+    trustAccess: "24*7 Access",
+    trustAccessSub: "Services available round the clock",
+    trustCitizen: "Citizen First",
+    trustCitizenSub: "Committed to serve you",
+    privacy: "Privacy Policy",
+    terms: "Terms and Conditions",
+    help: "Help",
+    contact: "Contact Us",
+    usernameError: "Username must contain only letters (A-Z, a-z)",
+    mobileError: "Mobile number must be exactly 10 digits",
+    fullNameError: "Full Name must contain only letters (A-Z, a-z)",
+    requiredError: "This field is required"
+  },
+  ta: {
+    heroTitle: <>ஒவ்வொரு குடிமகனுக்கும்<br />டிஜிட்டல் சேவைகள்.</>,
+    heroSubtitle: <>அனைத்து அரசு சேவைகள் மற்றும்<br />மக்கள் நலனுக்கான ஒரே தளம்</>,
+    secure: "பாதுகாப்பானது",
+    secureSub: "உங்கள் தரவு பாதுகாப்பாக உள்ளது",
+    accessible: "அணுகக்கூடியது",
+    accessibleSub: "எந்த நேரத்திலும், எங்கும்",
+    simplified: "எளிமையானது",
+    simplifiedSub: "சேவைகளை எளிதாக பெறலாம்",
+    trusted: "நம்பகமானது",
+    trustedSub: "அதிகாரப்பூர்வ அரசு தளம்",
+    loginTitle: "உங்கள் கணக்கில் உள்நுழைக",
+    loginTab: "OTP மூலம் உள்நுழைக",
+    registerTab: "பதிவு செய்க",
+    username: "பயனர் பெயர்",
+    usernamePlaceholder: "உங்கள் பயனர் பெயரை உள்ளிடவும்",
+    mobileNumber: "மொபைல் எண்",
+    mobilePlaceholder: "உங்கள் மொபைல் எண்ணை உள்ளிடவும்",
+    sendOtp: "OTP அனுப்புக",
+    loginBtn: "உள்நுழைக",
+    fullName: "முழு பெயர்",
+    fullNamePlaceholder: "உங்கள் முழு பெயரை உள்ளிடவும்",
+    email: "மின்னஞ்சல் முகவரி",
+    emailPlaceholder: "உங்கள் மின்னஞ்சலை உள்ளிடவும்",
+    registerBtn: "பதிவு செய்க",
+    enterOtp: "OTP-ஐ உள்ளிடவும்",
+    enterOtpPlaceholder: "6-இலக்க OTP-ஐ உள்ளிடவும்",
+    verifyLoginBtn: "சரிபார்த்து உள்நுழைக",
+    verifyRegisterBtn: "சரிபார்த்து பதிவு செய்க",
+    resendOtp: "OTP-ஐ மீண்டும் அனுப்புக",
+    trustSecure: "100% பாதுகாப்பானது",
+    trustSecureSub: "முழுமையான குறியாக்கம்",
+    trustVerified: "சரிபார்க்கப்பட்ட தளம்",
+    trustVerifiedSub: "அதிகாரப்பூர்வ அரசு வலைத்தளம்",
+    trustAccess: "24*7 அணுகல்",
+    trustAccessSub: "எந்நேரமும் சேவைகள் கிடைக்கும்",
+    trustCitizen: "Citizen First",
+    trustCitizenSub: "உங்களுக்கு சேவை செய்ய அர்ப்பணிக்கப்பட்டுள்ளது",
+    privacy: "தனியுரிமைக் கொள்கை",
+    terms: "விதிமுறைகள் மற்றும் நிபந்தனைகள்",
+    help: "உதவி",
+    contact: "தொடர்பு கொள்ள",
+    usernameError: "பயனர் பெயர் எழுத்துக்களை (A-Z, a-z) மட்டுமே கொண்டிருக்க வேண்டும்",
+    mobileError: "கைபேசி எண் சரியாக 10 இலக்கங்களாக இருக்க வேண்டும்",
+    fullNameError: "முழு பெயர் எழுத்துக்களை (A-Z, a-z) மட்டுமே கொண்டிருக்க வேண்டும்",
+    requiredError: "இப்புலம் தேவையானது"
+  }
+} as const;
 
-export function AuthScreen({ onSuccess }: { onSuccess: () => void }) {
-  const { setUser, setFontSize, fontSize } = useApp();
-  const { t, lang, setLang } = useLanguage();
-  const [mode, setMode] = useState<Mode>("login");
+type Lang = keyof typeof translations;
+
+export function AuthScreen({ onSuccess }: { onSuccess?: () => void }) {
+  const [activeTab, setActiveTab] = useState<"login" | "register">("login");
+  const [fontSize, setFontSize] = useState(16);
+  const [lang, setLang] = useState<Lang>("en");
   const [otpSent, setOtpSent] = useState(false);
-  const [otp, setOtp] = useState("");
 
-  const [contact, setContact] = useState("");
+  // Form State
+  const [loginUsername, setLoginUsername] = useState("");
+  const [loginMobile, setLoginMobile] = useState("");
+  const [registerFullName, setRegisterFullName] = useState("");
+  const [registerMobile, setRegisterMobile] = useState("");
+  const [registerEmail, setRegisterEmail] = useState("");
 
-  const sendOtp = () => {
-    if (!contact) return toast.error(t("toastEnterContact"));
-    setOtpSent(true);
-    toast.success(t("toastOtpSent"));
-  };
+  // Error State
+  const [errors, setErrors] = useState<{
+    username?: string;
+    loginMobile?: string;
+    fullName?: string;
+    registerMobile?: string;
+  }>({});
 
-  const verify = () => {
-    if (otp.length !== 6) return toast.error(t("toastEnterOtp"));
-    setUser({
-      name: "Citizen",
-      contact: contact,
-      role: "citizen",
-    });
-    toast.success(t("toastLoginSuccess"));
-    onSuccess();
+  // Reset OTP & input states when changing tabs
+  useEffect(() => {
+    setOtpSent(false);
+    setErrors({});
+    setLoginUsername("");
+    setLoginMobile("");
+    setRegisterFullName("");
+    setRegisterMobile("");
+    setRegisterEmail("");
+  }, [activeTab]);
+
+  const t = translations[lang];
+
+  useEffect(() => {
+    document.documentElement.style.fontSize = `${fontSize}px`;
+    return () => {
+      document.documentElement.style.fontSize = "";
+    };
+  }, [fontSize]);
+
+  const changeFontSize = (delta: number) => {
+    setFontSize((prev) => Math.min(24, Math.max(12, prev + delta)));
   };
 
   return (
-    <div className="min-h-[100dvh] w-full bg-white relative flex flex-col font-sans">
+    <div className="auth-page">
+      {/* ===== MAIN SPLIT LAYOUT ===== */}
+      <div className="auth-main">
+        {/* ---- LEFT SECTION (Hero with Image) ---- */}
+        <div className="auth-hero">
+          {/* Background Image */}
+          {/* <img
+            src="https://images.unsplash.com/photo-1578926288207-a90a5366759d?w=1200&q=80"
+            alt="Chennai Heritage"
+            className="auth-hero-bg"
+          /> */}
+          {/* Dark gradient overlay */}
+          <div className="auth-hero-overlay" />
 
-      {/* Background Section */}
-      <div className="fixed inset-0 z-0 flex overflow-hidden pointer-events-none">
-        {/* Left Gradient Box for Mobile/Fallback */}
-        <div className="w-full lg:w-0 h-full bg-gradient-to-br from-[#273852] to-[#8f9baf] lg:hidden"></div>
+          {/* Orange decorative wave on right edge */}
+          <div className="auth-wave-divider">
+            <svg viewBox="0 0 120 800" preserveAspectRatio="none">
+              <path
+                d="M30,0 C80,150 10,300 60,400 C110,500 20,650 70,800 L120,800 L120,0 Z"
+                fill="#ffffff"
+              />
+              <path
+                d="M20,0 C70,150 0,300 50,400 C100,500 10,650 60,800 L70,800 C20,650 110,500 60,400 C10,300 80,150 30,0 Z"
+                fill="#e8872b"
+              />
+            </svg>
+          </div>
 
-        {/* The Orange Wavy Line & Gradient Fill (Desktop) */}
-        <svg className="absolute left-0 top-0 w-full h-full pointer-events-none hidden lg:block" preserveAspectRatio="none" viewBox="0 0 100 100">
-          <path d="M 55 0 C 62 25, 55 75, 58 100 L 0 100 L 0 0 Z" fill="url(#bgGrad)" />
-          <path d="M 55 0 C 62 25, 55 75, 58 100" fill="none" stroke="#ea580c" strokeWidth="0.6" />
-          <defs>
-            <linearGradient id="bgGrad" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stopColor="#273852" />
-              <stop offset="100%" stopColor="#8f9baf" />
-            </linearGradient>
-          </defs>
-        </svg>
-      </div>
-
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col lg:flex-row w-full relative z-10">
-
-        {/* Left Side (Text & Features) */}
-        <div className="flex flex-col w-full lg:w-[52%] xl:w-[55%] p-6 lg:p-10 pb-0 text-white">
-          {/* Header */}
-          <div className="flex items-center mt-2 lg:mt-0">
+          {/* GCC Logo */}
+          <div className="auth-gcc-logo">
+            {/* <img
+              src="https://chennaicorporation.gov.in/gcc/images/270-2709575_greater-chennai-corporation-dr-greater-chennai-corporation-logo.png"
+              alt="GCC Logo"
+              className="auth-gcc-logo-img"
+            /> */}
             <div>
-              <h1 className="font-bold text-sm lg:text-[1.1rem] leading-tight tracking-wide">{t("gccName")}</h1>
-              <p className="text-[10px] lg:text-[13px] font-medium text-white/90 font-tamil mt-0.5">{t("gccTamil")}</p>
+              <h3 className="auth-gcc-title">Greater Chennai Corporation</h3>
+              <p className="auth-gcc-subtitle">சென்னை மாநகராட்சி</p>
             </div>
           </div>
 
-          {/* Hero Text (Desktop Only) */}
-          <div className="hidden lg:block mt-6 xl:mt-8 max-w-lg">
-            <h2 className="text-4xl xl:text-[3.25rem] font-bold leading-[1.2]">
-              {t("authHeroTitle")}
-            </h2>
-            <div className="flex gap-2 mt-6 mb-4 h-1.5 w-64">
-              <div className="flex-1 bg-[#ea580c] rounded-full"></div>
-              <div className="flex-1 bg-[#1e40af] rounded-full"></div>
-              <div className="flex-1 bg-[#3b82f6] rounded-full"></div>
-              <div className="flex-1 bg-[#22c55e] rounded-full"></div>
-            </div>
-            <p className="text-[1.1rem] font-medium leading-relaxed tracking-wide">
-              {t("authHeroSub")}
-            </p>
-          </div>
+          {/* Hero Text Content */}
+          <motion.div
+            initial={{ x: -40, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="auth-hero-content"
+          >
+            <h1 className="auth-hero-title">
+              <span className="quote-mark">&ldquo;</span>{t.heroTitle}<span className="quote-mark">&rdquo;</span>
+            </h1>
 
-          {/* Feature Glass panel (Desktop Only) */}
-          <div className="hidden lg:flex mt-auto mb-8 w-full max-w-[480px] xl:max-w-[600px] bg-white/10 backdrop-blur-md border border-white/20 rounded-[1.5rem] p-4 xl:p-6 justify-between gap-1 xl:gap-2 text-center shadow-[0_8px_32px_rgba(0,0,0,0.1)] relative">
-
-            <div className="flex flex-col items-center flex-1 min-w-0">
-              <div className="mb-2 xl:mb-3 bg-[#3b82f6] rounded-full p-2.5 xl:p-3.5 shadow-md"><ShieldCheck className="h-4 w-4 xl:h-5 xl:w-5" /></div>
-              <div className="font-bold text-[11px] xl:text-[13px]">{t("featSecure")}</div>
-              <div className="text-[9px] xl:text-[10px] opacity-80 mt-0.5 xl:mt-1 leading-tight">{t("featSecureDesc")}</div>
+            {/* Tri-color accent bar */}
+            <div className="auth-tricolor">
+              <div className="tricolor-bar orange" />
+              <div className="tricolor-bar blue" />
+              <div className="tricolor-bar green" />
             </div>
-            <div className="w-px bg-white/20 my-2"></div>
 
-            <div className="flex flex-col items-center flex-1 min-w-0">
-              <div className="mb-2 xl:mb-3 bg-[#22c55e] rounded-full p-2.5 xl:p-3.5 shadow-md"><Users className="h-4 w-4 xl:h-5 xl:w-5" /></div>
-              <div className="font-bold text-[11px] xl:text-[13px]">{t("featAccess")}</div>
-              <div className="text-[9px] xl:text-[10px] opacity-80 mt-0.5 xl:mt-1 leading-tight">{t("featAccessDesc")}</div>
-            </div>
-            <div className="w-px bg-white/20 my-2"></div>
+            <p className="auth-hero-subtitle">{t.heroSubtitle}</p>
+          </motion.div>
 
-            <div className="flex flex-col items-center flex-1 min-w-0">
-              <div className="mb-2 xl:mb-3 bg-[#f59e0b] rounded-full p-2.5 xl:p-3.5 shadow-md"><Globe className="h-4 w-4 xl:h-5 xl:w-5" /></div>
-              <div className="font-bold text-[11px] xl:text-[13px]">{t("featSimple")}</div>
-              <div className="text-[9px] xl:text-[10px] opacity-80 mt-0.5 xl:mt-1 leading-tight">{t("featSimpleDesc")}</div>
+          {/* Glass Features Card at bottom */}
+          <motion.div
+            initial={{ y: 40, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.7, delay: 0.5 }}
+            className="auth-glass-card-wrapper"
+          >
+            <div className="auth-glass-card">
+              <div className="auth-glass-grid">
+                {[
+                  {
+                    icon: <ShieldCheck size={22} />,
+                    label: t.secure,
+                    sub: t.secureSub,
+                    colorClass: "feature-blue",
+                  },
+                  {
+                    icon: <Users size={22} />,
+                    label: t.accessible,
+                    sub: t.accessibleSub,
+                    colorClass: "feature-green",
+                  },
+                  {
+                    icon: <Globe size={22} />,
+                    label: t.simplified,
+                    sub: t.simplifiedSub,
+                    colorClass: "feature-orange",
+                  },
+                  {
+                    icon: <CheckCircle size={22} />,
+                    label: t.trusted,
+                    sub: t.trustedSub,
+                    colorClass: "feature-red",
+                  },
+                ].map((item, i) => (
+                  <div key={i} className="auth-glass-item">
+                    <div className={`auth-glass-icon ${item.colorClass}`}>
+                      {item.icon}
+                    </div>
+                    <p className="auth-glass-label">{item.label}</p>
+                    <p className="auth-glass-sub">{item.sub}</p>
+                  </div>
+                ))}
+              </div>
             </div>
-            <div className="w-px bg-white/20 my-2"></div>
-
-            <div className="flex flex-col items-center flex-1 min-w-0">
-              <div className="mb-2 xl:mb-3 bg-[#ef4444] rounded-full p-2.5 xl:p-3.5 shadow-md"><Shield className="h-4 w-4 xl:h-5 xl:w-5" /></div>
-              <div className="font-bold text-[11px] xl:text-[13px]">{t("featTrust")}</div>
-              <div className="text-[9px] xl:text-[10px] opacity-80 mt-0.5 xl:mt-1 leading-tight">{t("featTrustDesc")}</div>
-            </div>
-          </div>
+          </motion.div>
         </div>
 
-        {/* Right Side (Login Form) */}
-        <div className="w-full lg:w-[48%] xl:w-[45%] flex flex-col py-6 lg:py-8 px-4 sm:px-8 lg:px-8 items-center relative justify-center z-20 flex-1">
-
-          {/* Top Actions */}
-          <div className="flex lg:absolute justify-end w-full max-w-[460px] lg:max-w-none lg:w-auto lg:top-8 right-6 lg:right-10 gap-3 lg:gap-4 text-slate-600 mb-6 lg:mb-10 z-50">
-            <div className="flex border border-slate-200 rounded-full overflow-hidden text-[11px] font-bold bg-white shadow-sm">
-              <button onClick={() => setFontSize("small")} className={`px-3 lg:px-4 py-1.5 transition ${fontSize === "small" ? "bg-slate-200" : "hover:bg-slate-50"}`}>A-</button>
-              <button onClick={() => setFontSize("default")} className={`px-3 lg:px-4 py-1.5 transition border-l border-slate-200 ${fontSize === "default" ? "bg-slate-200" : "hover:bg-slate-50"}`}>A</button>
-              <button onClick={() => setFontSize("large")} className={`px-3 lg:px-4 py-1.5 transition border-l border-slate-200 ${fontSize === "large" ? "bg-slate-200" : "hover:bg-slate-50"}`}>A+</button>
+        {/* ---- RIGHT SECTION (Form) ---- */}
+        <div className="auth-form-section">
+          {/* Top bar: font size + language */}
+          <div className="auth-topbar">
+            <div className="font-size-controls">
+              <button onClick={() => changeFontSize(-2)} className="font-btn">
+                A-
+              </button>
+              <button onClick={() => setFontSize(16)} className="font-btn font-btn-mid">A</button>
+              <button onClick={() => changeFontSize(2)} className="font-btn">
+                A+
+              </button>
             </div>
-            <button onClick={() => setLang(lang === "en" ? "ta" : "en")} className="flex items-center gap-1.5 border border-slate-200 rounded-full px-3 lg:px-4 py-1.5 text-[11px] font-bold hover:bg-slate-50 transition bg-white shadow-sm">
-              <Globe className="h-3.5 w-3.5" /> <span className="hidden sm:inline">{lang === "en" ? "தமிழ்" : "English"}</span> ▾
-            </button>
+
+            <div className="lang-dropdown-wrapper">
+              <button 
+                className="lang-btn" 
+                onClick={() => setLang(lang === "en" ? "ta" : "en")}
+              >
+                <Globe size={14} />
+                {lang === "en" ? "தமிழ்" : "English"}
+              </button>
+            </div>
           </div>
 
-          {/* Form Card Container */}
-          <div className="w-full max-w-[460px] flex flex-col relative z-20 bg-white lg:bg-transparent p-6 sm:p-8 lg:p-0 rounded-[2rem] lg:rounded-none shadow-2xl shadow-black/10 lg:shadow-none">
-            <h2 className="text-[1.8rem] lg:text-[2.2rem] font-black text-center mb-4 text-[#0f172a] tracking-tight">{t("authTitle")}</h2>
+          {/* Login Form - Centered */}
+          <div className="auth-form-container">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3, duration: 0.5 }}
+              className="auth-form-card"
+            >
+              <h2 className="auth-form-title">{t.loginTitle}</h2>
 
-            {!otpSent && (
-              <div className="w-full">
-                {/* Tabs */}
-                <div className="flex bg-[#f1f5f9] rounded-2xl p-1.5 mb-6 border border-slate-100">
-                  <button
-                    onClick={() => setMode("login")}
-                    className={`flex-1 py-3 text-sm font-bold rounded-[0.85rem] transition-all flex items-center justify-center gap-2
-                      ${mode === "login" ? "bg-white text-[#1e3a8a] shadow-sm border border-slate-100" : "text-slate-400 hover:text-slate-600"}
-                    `}>
-                    <Smartphone className="h-4 w-4" /> {t("authLoginTab")}
-                  </button>
-                  <button
-                    onClick={() => setMode("register")}
-                    className={`flex-1 py-3 text-sm font-bold rounded-[0.85rem] transition-all flex items-center justify-center gap-2
-                      ${mode === "register" ? "bg-white text-[#1e3a8a] shadow-sm border border-slate-100" : "text-slate-400 hover:text-slate-600"}
-                    `}>
-                    <UserPlus className="h-4 w-4" /> {t("authRegTab")}
-                  </button>
-                </div>
-
-                {/* Form Elements */}
-                <div className="space-y-6">
-                  <div className="space-y-2">
-                    <label className="text-[13px] font-bold text-slate-800 block">{t("authUsername")}</label>
-                    <div className="relative">
-                      <User className="absolute left-4 top-3.5 h-4 w-4 text-slate-400" />
-                      <Input className="pl-11 h-[3.25rem] rounded-xl border-slate-200 focus-visible:ring-blue-600 text-sm font-medium bg-white placeholder:text-slate-400 shadow-sm" placeholder={t("authUsernamePlace")} />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-[13px] font-bold text-slate-800 block">{t("authMobile")}</label>
-                    <div className="relative">
-                      <Phone className="absolute left-4 top-3.5 h-4 w-4 text-slate-400" />
-                      <Input
-                        value={contact}
-                        onChange={(e) => setContact(e.target.value)}
-                        className="pl-11 h-[3.25rem] rounded-xl border-slate-200 focus-visible:ring-blue-600 text-sm font-medium bg-white placeholder:text-slate-400 shadow-sm"
-                        placeholder={t("authMobilePlace")}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="pt-2">
-                    <Button onClick={sendOtp} className="w-full h-[3.25rem] bg-white text-[#1e3a8a] hover:bg-slate-50 border-2 border-[#1e3a8a] rounded-xl font-bold text-[15px] shadow-sm" variant="outline">
-                      {t("sendOtp")}
-                    </Button>
-                  </div>
-                </div>
+              {/* Tabs */}
+              <div className="auth-tabs">
+                <button
+                  onClick={() => setActiveTab("login")}
+                  className={`auth-tab ${activeTab === "login" ? "active" : ""}`}
+                >
+                  <Phone size={15} />
+                  {t.loginTab}
+                </button>
+                <button
+                  onClick={() => setActiveTab("register")}
+                  className={`auth-tab ${activeTab === "register" ? "active" : ""}`}
+                >
+                  <UserPlus size={15} />
+                  {t.registerTab}
+                </button>
               </div>
-            )}
 
-            {otpSent && (
-              <div className="w-full">
-                <div className="bg-white rounded-2xl p-8 shadow-[0_5px_25px_rgba(0,0,0,0.05)] border border-slate-100">
-                  <div className="animate-in fade-in slide-in-from-right-4 duration-500">
-                    <div className="flex flex-col items-center justify-center space-y-6">
-                      <div className="bg-blue-50 p-4 rounded-full">
-                        <Fingerprint className="h-10 w-10 text-blue-600" />
-                      </div>
-                      <p className="text-[15px] text-slate-600 text-center font-medium">
-                        {t("otpSentMsg")}
-                      </p>
+              {/* Form Content */}
+              <div className="auth-form-inner">
+                <AnimatePresence mode="wait">
+                  {activeTab === "login" ? (
+                    <motion.div
+                      key="login"
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: 10 }}
+                      transition={{ duration: 0.2 }}
+                      className="auth-fields"
+                    >
+                      {!otpSent ? (
+                        <>
+                          <div className="field-group">
+                            <label className="field-label">{t.username}</label>
+                            <div className={`field-input-wrapper ${errors.username ? 'has-error' : ''}`}>
+                              <User size={18} className="field-icon" />
+                              <input
+                                type="text"
+                                placeholder={t.usernamePlaceholder}
+                                className="field-input"
+                                value={loginUsername}
+                                onChange={(e) => {
+                                  // Capital & small letters (Aa-Zz) only
+                                  const val = e.target.value.replace(/[^a-zA-Z]/g, "");
+                                  setLoginUsername(val);
+                                  if (errors.username) {
+                                    setErrors((prev) => ({ ...prev, username: undefined }));
+                                  }
+                                }}
+                              />
+                            </div>
+                            {errors.username && <span className="field-error-msg">{errors.username}</span>}
+                          </div>
 
-                      <div className="py-2">
-                        <InputOTP maxLength={6} value={otp} onChange={setOtp}>
-                          <InputOTPGroup className="gap-2">
-                            {[0, 1, 2, 3, 4, 5].map(i => (
-                              <InputOTPSlot key={i} index={i} className="h-14 w-12 text-xl border-slate-300 rounded-lg font-bold text-blue-900 shadow-sm" />
-                            ))}
-                          </InputOTPGroup>
-                        </InputOTP>
-                      </div>
+                          <div className="field-group">
+                            <label className="field-label">{t.mobileNumber}</label>
+                            <div className={`field-input-wrapper ${errors.loginMobile ? 'has-error' : ''}`}>
+                              <Phone size={18} className="field-icon" />
+                              <input
+                                type="tel"
+                                placeholder={t.mobilePlaceholder}
+                                className="field-input"
+                                value={loginMobile}
+                                onChange={(e) => {
+                                  // numbers only, max 10 digits
+                                  const val = e.target.value.replace(/\D/g, "").slice(0, 10);
+                                  setLoginMobile(val);
+                                  if (errors.loginMobile) {
+                                    setErrors((prev) => ({ ...prev, loginMobile: undefined }));
+                                  }
+                                }}
+                              />
+                            </div>
+                            {errors.loginMobile && <span className="field-error-msg">{errors.loginMobile}</span>}
+                          </div>
 
-                      <div className="w-full pt-4 flex flex-col gap-3">
-                        <Button onClick={verify} className="bg-[#1e3a8a] hover:bg-[#152a6a] text-white h-[3.25rem] rounded-xl font-bold text-base w-full shadow-sm">
-                          {t("verifyLogin")}
-                        </Button>
-                        <button onClick={() => setOtpSent(false)} className="text-sm font-semibold text-slate-500 hover:text-blue-600 transition">
-                          {t("changeMobile")}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                          <div className="field-group">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const newErrors: typeof errors = {};
+                                if (!loginUsername.trim()) {
+                                  newErrors.username = t.requiredError;
+                                } else if (!/^[a-zA-Z]+$/.test(loginUsername)) {
+                                  newErrors.username = t.usernameError;
+                                }
+
+                                if (!loginMobile.trim()) {
+                                  newErrors.loginMobile = t.requiredError;
+                                } else if (loginMobile.length !== 10) {
+                                  newErrors.loginMobile = t.mobileError;
+                                }
+
+                                if (Object.keys(newErrors).length > 0) {
+                                  setErrors(newErrors);
+                                } else {
+                                  setErrors({});
+                                  setOtpSent(true);
+                                }
+                              }}
+                              className="btn-send-otp"
+                            >
+                              {t.sendOtp}
+                            </button>
+                          </div>
+                        </>
+                      ) : (
+                        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="auth-fields">
+                          <div className="field-group">
+                            <label className="field-label">{t.enterOtp}</label>
+                            <div className="field-input-wrapper">
+                              <ShieldCheck size={18} className="field-icon" />
+                              <input type="text" maxLength={6} placeholder={t.enterOtpPlaceholder} className="field-input otp-input" />
+                            </div>
+                            <div style={{ textAlign: "right", marginTop: "0.5rem" }}>
+                              <button type="button" className="resend-otp-btn">{t.resendOtp}</button>
+                            </div>
+                          </div>
+                          <button type="button" onClick={() => onSuccess?.()} className="btn-login">{t.verifyLoginBtn}</button>
+                        </motion.div>
+                      )}
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="register"
+                      initial={{ opacity: 0, x: 10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -10 }}
+                      transition={{ duration: 0.2 }}
+                      className="auth-fields"
+                    >
+                      {!otpSent ? (
+                        <>
+                          <div className="field-group">
+                            <label className="field-label">{t.fullName}</label>
+                            <div className={`field-input-wrapper ${errors.fullName ? 'has-error' : ''}`}>
+                              <User size={18} className="field-icon" />
+                              <input
+                                type="text"
+                                placeholder={t.fullNamePlaceholder}
+                                className="field-input"
+                                value={registerFullName}
+                                onChange={(e) => {
+                                  // Capital & small letters (Aa-Zz) only
+                                  const val = e.target.value.replace(/[^a-zA-Z]/g, "");
+                                  setRegisterFullName(val);
+                                  if (errors.fullName) {
+                                    setErrors((prev) => ({ ...prev, fullName: undefined }));
+                                  }
+                                }}
+                              />
+                            </div>
+                            {errors.fullName && <span className="field-error-msg">{errors.fullName}</span>}
+                          </div>
+
+                          <div className="field-group">
+                            <label className="field-label">{t.mobileNumber}</label>
+                            <div className={`field-input-wrapper ${errors.registerMobile ? 'has-error' : ''}`}>
+                              <Phone size={18} className="field-icon" />
+                              <input
+                                type="tel"
+                                placeholder={t.mobilePlaceholder}
+                                className="field-input"
+                                value={registerMobile}
+                                onChange={(e) => {
+                                  // numbers only, max 10 digits
+                                  const val = e.target.value.replace(/\D/g, "").slice(0, 10);
+                                  setRegisterMobile(val);
+                                  if (errors.registerMobile) {
+                                    setErrors((prev) => ({ ...prev, registerMobile: undefined }));
+                                  }
+                                }}
+                              />
+                            </div>
+                            {errors.registerMobile && <span className="field-error-msg">{errors.registerMobile}</span>}
+                          </div>
+
+                          <div className="field-group">
+                            <label className="field-label">{t.email}</label>
+                            <div className="field-input-wrapper">
+                              <Globe size={18} className="field-icon" />
+                              <input
+                                type="email"
+                                placeholder={t.emailPlaceholder}
+                                className="field-input"
+                                value={registerEmail}
+                                onChange={(e) => setRegisterEmail(e.target.value)}
+                              />
+                            </div>
+                          </div>
+
+                          <div className="field-group">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const newErrors: typeof errors = {};
+                                if (!registerFullName.trim()) {
+                                  newErrors.fullName = t.requiredError;
+                                } else if (!/^[a-zA-Z]+$/.test(registerFullName)) {
+                                  newErrors.fullName = t.fullNameError;
+                                }
+
+                                if (!registerMobile.trim()) {
+                                  newErrors.registerMobile = t.requiredError;
+                                } else if (registerMobile.length !== 10) {
+                                  newErrors.registerMobile = t.mobileError;
+                                }
+
+                                if (Object.keys(newErrors).length > 0) {
+                                  setErrors(newErrors);
+                                } else {
+                                  setErrors({});
+                                  setOtpSent(true);
+                                }
+                              }}
+                              className="btn-send-otp"
+                            >
+                              {t.sendOtp}
+                            </button>
+                          </div>
+                        </>
+                      ) : (
+                        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="auth-fields">
+                          <div className="field-group">
+                            <label className="field-label">{t.enterOtp}</label>
+                            <div className="field-input-wrapper">
+                              <ShieldCheck size={18} className="field-icon" />
+                              <input type="text" maxLength={6} placeholder={t.enterOtpPlaceholder} className="field-input otp-input" />
+                            </div>
+                            <div style={{ textAlign: "right", marginTop: "0.5rem" }}>
+                              <button type="button" className="resend-otp-btn">{t.resendOtp}</button>
+                            </div>
+                          </div>
+                          <button type="button" onClick={() => onSuccess?.()} className="btn-login btn-register">{t.verifyRegisterBtn}</button>
+                        </motion.div>
+                      )}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
-            )}
+            </motion.div>
           </div>
         </div>
       </div>
 
-      {/* Footer Section */}
-      <div className="hidden md:flex bg-[#f8fafc] w-full relative z-20 flex-wrap justify-around lg:justify-between items-center py-3 lg:py-4 px-4 lg:px-16 border-t border-slate-100 mt-auto">
-        <div className="flex items-center gap-3 p-2 text-left">
-          <div className="bg-blue-50/80 text-blue-500 p-2.5 rounded-full"><ShieldCheck className="h-5 w-5 stroke-[2.5]" /></div>
-          <div>
-            <div className="font-bold text-slate-800 text-[13px] leading-tight mb-1">{t("footSecure")}</div>
-            <div className="text-[11px] text-slate-500 font-semibold leading-tight">{t("footSecureDesc")}</div>
-          </div>
-        </div>
-        <div className="flex items-center gap-3 p-2 text-left">
-          <div className="bg-green-50/80 text-green-500 p-2.5 rounded-full"><CheckCircle2 className="h-5 w-5 stroke-[2.5]" /></div>
-          <div>
-            <div className="font-bold text-slate-800 text-[13px] leading-tight mb-1">{t("footVerify")}</div>
-            <div className="text-[11px] text-slate-500 font-semibold leading-tight">{t("footVerifyDesc")}</div>
-          </div>
-        </div>
-        <div className="flex items-center gap-3 p-2 text-left">
-          <div className="bg-orange-50/80 text-orange-500 p-2.5 rounded-full"><Headset className="h-5 w-5 stroke-[2.5]" /></div>
-          <div>
-            <div className="font-bold text-slate-800 text-[13px] leading-tight mb-1">{t("foot247")}</div>
-            <div className="text-[11px] text-slate-500 font-semibold leading-tight">{t("foot247Desc")}</div>
-          </div>
-        </div>
-        <div className="flex items-center gap-3 p-2 text-left">
-          <div className="bg-purple-50/80 text-purple-500 p-2.5 rounded-full"><Users className="h-5 w-5 stroke-[2.5]" /></div>
-          <div>
-            <div className="font-bold text-slate-800 text-[13px] leading-tight mb-1">{t("footCitizen")}</div>
-            <div className="text-[11px] text-slate-500 font-semibold leading-tight">{t("footCitizenDesc")}</div>
-          </div>
+      {/* ===== FOOTER TRUST BAR ===== */}
+      <div className="auth-trust-bar">
+        <div className="auth-trust-grid">
+          {[
+            {
+              icon: <ShieldCheck size={22} />,
+              cls: "trust-blue",
+              title: t.trustSecure,
+              sub: t.trustSecureSub,
+            },
+            {
+              icon: <BadgeCheck size={22} />,
+              cls: "trust-green",
+              title: t.trustVerified,
+              sub: t.trustVerifiedSub,
+            },
+            {
+              icon: <Clock3 size={22} />,
+              cls: "trust-orange",
+              title: t.trustAccess,
+              sub: t.trustAccessSub,
+            },
+            {
+              icon: <Users size={22} />,
+              cls: "trust-purple",
+              title: t.trustCitizen,
+              sub: t.trustCitizenSub,
+            },
+          ].map((item, i) => (
+            <div key={i} className="trust-item">
+              <div className={`trust-icon ${item.cls}`}>{item.icon}</div>
+              <div>
+                <h4 className="trust-title">{item.title}</h4>
+                <p className="trust-sub">{item.sub}</p>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* Dark Bottom Links Footer */}
-      <div className="bg-[#0f172a] text-white py-3 flex flex-wrap justify-center items-center gap-4 text-sm w-full relative z-20">
-        <a href="#" className="hover:text-blue-300 transition-colors">{t("linkPrivacy")}</a>
-        <span className="text-white/30">|</span>
-        <a href="#" className="hover:text-blue-300 transition-colors">{t("linkTerms")}</a>
-        <span className="text-white/30">|</span>
-        <a href="#" className="hover:text-blue-300 transition-colors">{t("linkHelp")}</a>
-        <span className="text-white/30">|</span>
-        <a href="#" className="hover:text-blue-300 transition-colors">{t("linkContact")}</a>
+      {/* ===== FOOTER LINKS ===== */}
+      <div className="auth-footer">
+        <div className="auth-footer-links">
+          <a href="#">{t.privacy}</a>
+          <span className="footer-divider">|</span>
+          <a href="#">{t.terms}</a>
+          <span className="footer-divider">|</span>
+          <a href="#">{t.help}</a>
+          <span className="footer-divider">|</span>
+          <a href="#">{t.contact}</a>
+        </div>
       </div>
     </div>
   );
