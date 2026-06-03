@@ -18,13 +18,18 @@ interface LanguageContextType {
 const LanguageContext = createContext<LanguageContextType | null>(null);
 
 export const LanguageProvider = ({ children }: { children: React.ReactNode }) => {
-    const [lang, setLang] = useState<"en" | "ta">(
-        (localStorage.getItem("lang") as "en" | "ta") || "en"
-    );
+    const [lang, setLang] = useState<"en" | "ta">(() => {
+        if (typeof window !== "undefined") {
+            return (localStorage.getItem("lang") as "en" | "ta") || "en";
+        }
+        return "en";
+    });
 
     const changeLanguage = (value: "en" | "ta") => {
         setLang(value);
-        localStorage.setItem("lang", value);
+        if (typeof window !== "undefined") {
+            localStorage.setItem("lang", value);
+        }
     };
 
     const t = (key: string): string => {

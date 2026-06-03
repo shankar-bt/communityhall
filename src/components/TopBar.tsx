@@ -16,17 +16,15 @@ export function TopBar({ onLogout }: { onLogout?: () => void }) {
         <div className="flex items-center gap-3">
           <img src="/chennai_corporation_emblem.png" alt="Chennai Corporation" className="h-10 w-10 lg:h-11 lg:w-11 object-contain" />
           <div className="leading-tight text-[#1e3a8a]">
-            <h1 className="text-[12px] lg:text-[14px] font-bold tracking-tight">{t("Greater Chennai Corporation")}</h1>
-            {lang !== "ta" && (
-              <p className="text-[10px] lg:text-[11px] font-tamil font-semibold mt-0.5">சென்னை மாநகராட்சி</p>
-            )}
+            <h1 className="text-[12px] lg:text-[14px] font-bold tracking-tight">{t("gccName")}</h1>
+            <p className="text-[10px] lg:text-[11px] font-tamil font-semibold mt-0.5">{t("gccTamil")}</p>
           </div>
         </div>
 
         {/* Center: Title */}
         <div className="hidden md:flex items-center gap-2 text-[#1e3a8a] absolute left-1/2 -translate-x-1/2">
           <Building2 className="h-6 w-6 stroke-[2.5]" />
-          <h2 className="text-xl font-bold tracking-tight">{t("Community Hall Booking")}</h2>
+          <h2 className="text-xl font-bold tracking-tight">{t("appName")}</h2>
         </div>
 
         {/* Right: Actions */}
