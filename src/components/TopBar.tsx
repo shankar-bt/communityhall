@@ -1,10 +1,12 @@
 import { useApp } from "@/contexts/AppContext";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useFontSize } from "@/contexts/FontSizeContext";
 import { Globe, Building2 } from "lucide-react";
 
 export function TopBar({ onLogout }: { onLogout?: () => void }) {
   const { lang, setLang, t } = useLanguage();
   const { user } = useApp();
+  const { fontSize, setFontSize } = useFontSize();
 
   return (
     <header className="sticky top-0 z-40 bg-white border-b border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)]">
@@ -29,6 +31,28 @@ export function TopBar({ onLogout }: { onLogout?: () => void }) {
 
         {/* Right: Actions */}
         <div className="flex items-center gap-4">
+          {/* Font Size controls */}
+          <div className="flex border border-slate-200 rounded-lg overflow-hidden text-[12px] font-bold bg-white shadow-sm">
+            <button
+              onClick={() => setFontSize("small")}
+              className={`px-3 py-1.5 hover:bg-slate-50 transition ${fontSize === "small" ? "bg-slate-100 text-[#1e3a8a]" : "text-slate-600"}`}
+            >
+              A-
+            </button>
+            <button
+              onClick={() => setFontSize("medium")}
+              className={`px-3 py-1.5 hover:bg-slate-50 transition border-l border-slate-200 ${fontSize === "medium" ? "bg-slate-100 text-[#1e3a8a]" : "text-slate-600"}`}
+            >
+              A
+            </button>
+            <button
+              onClick={() => setFontSize("large")}
+              className={`px-3 py-1.5 hover:bg-slate-50 transition border-l border-slate-200 ${fontSize === "large" ? "bg-slate-100 text-[#1e3a8a]" : "text-slate-600"}`}
+            >
+              A+
+            </button>
+          </div>
+
           <button
             onClick={() => setLang(lang === "en" ? "ta" : "en")}
             className="flex items-center gap-2 bg-[#2a3c5a] text-white px-3.5 py-2 rounded-[0.5rem] text-[13px] font-semibold hover:bg-[#1f2d43] transition-colors"
