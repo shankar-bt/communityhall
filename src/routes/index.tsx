@@ -10,6 +10,7 @@ import { Calculator } from "@/components/calculator/Calculator";
 import { BookingWizard } from "@/components/booking/BookingWizard";
 import { Toaster } from "@/components/ui/sonner";
 import { Lock, ShieldCheck, Globe, Users } from "lucide-react";
+import { FontSizeProvider } from "@/contexts/FontSizeContext";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -22,10 +23,13 @@ export const Route = createFileRoute("/")({
   }),
   component: () => (
     <LanguageProvider>
-      <AppProvider>
-        <App />
-        <Toaster richColors position="top-right" />
-      </AppProvider>
+      <FontSizeProvider>
+
+        <AppProvider>
+          <App />
+          <Toaster richColors position="top-right" />
+        </AppProvider>
+      </FontSizeProvider>
     </LanguageProvider>
   ),
 });
@@ -45,15 +49,15 @@ function App() {
     );
   }
 
-  const selectHall = (h: Hall) => { setBooking(b => ({...b, hall: h})); setView("details"); };
+  const selectHall = (h: Hall) => { setBooking(b => ({ ...b, hall: h })); setView("details"); };
   const quickBook = (h: Hall) => {
-    setBooking(b => ({...b, hall: h, calc: null}));
+    setBooking(b => ({ ...b, hall: h, calc: null }));
     setView("calculator");
   };
   const logout = () => { setUser(null); setView("list"); };
 
   return (
-    <div 
+    <div
       className="min-h-screen flex flex-col bg-cover bg-fixed bg-center overflow-x-hidden"
       style={{ backgroundImage: "url('/theme.png')" }}
     >
@@ -68,12 +72,12 @@ function App() {
         )}
         {view === "wizard" && booking.hall && booking.calc && (
           <BookingWizard onExit={() => {
-            setBooking(b => ({...b, calc: null, docs: [], agreed: false, txnId: ""}));
+            setBooking(b => ({ ...b, calc: null, docs: [], agreed: false, txnId: "" }));
             setView("list");
           }} />
         )}
       </main>
-      
+
       {/* Dark Footer */}
       <footer className="bg-[#0f172a] text-white py-10 mt-auto w-full relative z-20">
         <div className="container mx-auto max-w-7xl px-4 lg:px-8 flex flex-wrap justify-between items-center gap-8">
