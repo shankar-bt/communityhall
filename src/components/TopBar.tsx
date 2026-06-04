@@ -9,7 +9,7 @@ export function TopBar({ onLogout }: { onLogout?: () => void }) {
   const { fontSize, setFontSize } = useFontSize();
 
   return (
-    <header className="sticky top-0 z-40 bg-white border-b border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)]">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] w-full">
       <div className="container mx-auto max-w-7xl flex items-center justify-between px-4 py-3 lg:px-8">
         {/* Left: Logo and App Name */}
         <div className="flex items-center gap-3">

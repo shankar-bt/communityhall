@@ -94,7 +94,7 @@ function App() {
 
   return (
     <div
-      className="min-h-screen flex flex-col bg-cover bg-fixed bg-center overflow-x-hidden"
+      className="min-h-screen flex flex-col bg-cover bg-fixed bg-center pt-[68px]"
       style={{ backgroundImage: "url('/theme.png')" }}
     >
       <TopBar onLogout={logout} />
