@@ -4,8 +4,26 @@ import { HALLS } from "@/lib/halls";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calculator as CalcIcon, Building2, Calendar as CalendarIcon, IndianRupee, Tag, Wallet, Percent, ArrowUpCircle, Banknote, CheckCircle2, ArrowLeft } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Calculator as CalcIcon,
+  Building2,
+  Calendar as CalendarIcon,
+  IndianRupee,
+  Tag,
+  Wallet,
+  Percent,
+  ArrowUpCircle,
+  Banknote,
+  CheckCircle2,
+  ArrowLeft,
+} from "lucide-react";
 
 export function Calculator({ onBack, onBookNow }: { onBack: () => void; onBookNow: () => void }) {
   const { t, booking, setBooking } = useApp();
@@ -24,8 +42,12 @@ export function Calculator({ onBack, onBookNow }: { onBack: () => void; onBookNo
     const gst = Math.round(netAmount * (hall.gstPercentage / 100 || 0.18));
     const deposit = hall.deposit;
     const total = netAmount + gst + deposit;
-    setBooking(b => ({
-      ...b, reason, numDays: days, startPeriod: start, endPeriod: end,
+    setBooking((b) => ({
+      ...b,
+      reason,
+      numDays: days,
+      startPeriod: start,
+      endPeriod: end,
       calc: { hallAmount, discount, netAmount, gst, deposit, total },
     }));
   };
@@ -33,7 +55,6 @@ export function Calculator({ onBack, onBookNow }: { onBack: () => void; onBookNo
   return (
     <div className="min-h-full bg-gradient-to-br from-orange-50/90 via-white/90 to-blue-100/90 pb-20">
       <div className="container mx-auto px-4 py-8 max-w-6xl animate-in fade-in duration-300 space-y-6">
-        
         {/* Top Banner */}
         <div className="bg-gradient-to-r from-blue-100/80 to-blue-50/40 rounded-xl p-6 flex items-center relative overflow-hidden border border-blue-200/50 shadow-sm">
           <div className="relative z-10 flex items-center gap-4">
@@ -42,11 +63,21 @@ export function Calculator({ onBack, onBookNow }: { onBack: () => void; onBookNo
             </div>
             <div>
               <h1 className="text-xl font-bold text-slate-800 mb-1">Calculate Rent Amount</h1>
-              <p className="text-sm text-slate-600 font-medium">Provide booking details to calculate the estimated rent amount</p>
+              <p className="text-sm text-slate-600 font-medium">
+                Provide booking details to calculate the estimated rent amount
+              </p>
             </div>
           </div>
           {/* Subtle background graphic for the banner */}
-          <div className="absolute right-0 top-0 bottom-0 w-1/3 opacity-30 pointer-events-none" style={{ backgroundImage: "url('/theme.png')", backgroundSize: 'cover', backgroundPosition: 'center', maskImage: 'linear-gradient(to right, transparent, black)' }}></div>
+          <div
+            className="absolute right-0 top-0 bottom-0 w-1/3 opacity-30 pointer-events-none"
+            style={{
+              backgroundImage: "url('/theme.png')",
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              maskImage: "linear-gradient(to right, transparent, black)",
+            }}
+          ></div>
         </div>
 
         {/* Select Hall Card */}
@@ -56,19 +87,21 @@ export function Calculator({ onBack, onBookNow }: { onBack: () => void; onBookNo
           </div>
           <div className="flex-1 max-w-md">
             <h2 className="text-sm font-bold text-slate-800 mb-1">Select Hall</h2>
-            <Select 
-              value={hall.id} 
+            <Select
+              value={hall.id}
               onValueChange={(val) => {
-                const newHall = HALLS.find(h => h.id === val);
-                if (newHall) setBooking(b => ({ ...b, hall: newHall, calc: null }));
+                const newHall = HALLS.find((h) => h.id === val);
+                if (newHall) setBooking((b) => ({ ...b, hall: newHall, calc: null }));
               }}
             >
               <SelectTrigger className="bg-white border-slate-200">
                 <SelectValue placeholder="Select a hall" />
               </SelectTrigger>
               <SelectContent>
-                {HALLS.map(h => (
-                  <SelectItem key={h.id} value={h.id}>{h.name}</SelectItem>
+                {HALLS.map((h) => (
+                  <SelectItem key={h.id} value={h.id}>
+                    {h.name}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -84,9 +117,14 @@ export function Calculator({ onBack, onBookNow }: { onBack: () => void; onBookNo
 
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
             <div className="space-y-2">
-              <Label className="flex items-center gap-2 text-slate-600"><CalendarIcon className="h-4 w-4 text-blue-500 bg-blue-50 rounded-full p-0.5" /> Reason For Booking</Label>
+              <Label className="flex items-center gap-2 text-slate-600">
+                <CalendarIcon className="h-4 w-4 text-blue-500 bg-blue-50 rounded-full p-0.5" />{" "}
+                Reason For Booking
+              </Label>
               <Select value={reason} onValueChange={setReason}>
-                <SelectTrigger className="bg-white"><SelectValue placeholder="Select" /></SelectTrigger>
+                <SelectTrigger className="bg-white">
+                  <SelectValue placeholder="Select" />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Marriage">Marriage</SelectItem>
                   <SelectItem value="Meeting">Meeting</SelectItem>
@@ -96,21 +134,35 @@ export function Calculator({ onBack, onBookNow }: { onBack: () => void; onBookNo
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div className="space-y-2">
-              <Label className="flex items-center gap-2 text-slate-600"><CalendarIcon className="h-4 w-4 text-blue-500 bg-blue-50 rounded-full p-0.5" /> Number of Days</Label>
+              <Label className="flex items-center gap-2 text-slate-600">
+                <CalendarIcon className="h-4 w-4 text-blue-500 bg-blue-50 rounded-full p-0.5" />{" "}
+                Number of Days
+              </Label>
               <Select value={String(days)} onValueChange={(val) => setDays(Number(val))}>
-                <SelectTrigger className="bg-white"><SelectValue placeholder="Select" /></SelectTrigger>
+                <SelectTrigger className="bg-white">
+                  <SelectValue placeholder="Select" />
+                </SelectTrigger>
                 <SelectContent>
-                  {[1,2,3,4,5,6,7].map(n => <SelectItem key={n} value={String(n)}>{n}</SelectItem>)}
+                  {[1, 2, 3, 4, 5, 6, 7].map((n) => (
+                    <SelectItem key={n} value={String(n)}>
+                      {n}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
-              <Label className="flex items-center gap-2 text-slate-600"><CalendarIcon className="h-4 w-4 text-blue-500 bg-blue-50 rounded-full p-0.5" /> Start Period</Label>
+              <Label className="flex items-center gap-2 text-slate-600">
+                <CalendarIcon className="h-4 w-4 text-blue-500 bg-blue-50 rounded-full p-0.5" />{" "}
+                Start Period
+              </Label>
               <Select value={start} onValueChange={setStart}>
-                <SelectTrigger className="bg-white"><SelectValue placeholder="Select" /></SelectTrigger>
+                <SelectTrigger className="bg-white">
+                  <SelectValue placeholder="Select" />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Morning (6:00 AM)">Morning (6:00 AM)</SelectItem>
                   <SelectItem value="Evening (2:00 PM)">Evening (2:00 PM)</SelectItem>
@@ -119,9 +171,14 @@ export function Calculator({ onBack, onBookNow }: { onBack: () => void; onBookNo
             </div>
 
             <div className="space-y-2">
-              <Label className="flex items-center gap-2 text-slate-600"><CalendarIcon className="h-4 w-4 text-blue-500 bg-blue-50 rounded-full p-0.5" /> End Period</Label>
+              <Label className="flex items-center gap-2 text-slate-600">
+                <CalendarIcon className="h-4 w-4 text-blue-500 bg-blue-50 rounded-full p-0.5" /> End
+                Period
+              </Label>
               <Select value={end} onValueChange={setEnd}>
-                <SelectTrigger className="bg-white"><SelectValue placeholder="Select" /></SelectTrigger>
+                <SelectTrigger className="bg-white">
+                  <SelectValue placeholder="Select" />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Morning (2:00 PM)">Morning (2:00 PM)</SelectItem>
                   <SelectItem value="Evening (10:00 PM)">Evening (10:00 PM)</SelectItem>
@@ -131,10 +188,17 @@ export function Calculator({ onBack, onBookNow }: { onBack: () => void; onBookNo
           </div>
 
           <div className="mt-8 flex justify-end gap-3">
-            <Button variant="outline" onClick={onBack} className="px-6 py-5 rounded-lg text-[14px] font-bold">
+            <Button
+              variant="outline"
+              onClick={onBack}
+              className="px-6 py-5 rounded-lg text-[14px] font-bold"
+            >
               Back
             </Button>
-            <Button onClick={compute} className="bg-[#0f172a] hover:bg-[#1e293b] text-white px-8 py-5 rounded-lg text-[14px] font-bold shadow-md">
+            <Button
+              onClick={compute}
+              className="bg-[#0f172a] hover:bg-[#1e293b] text-white px-8 py-5 rounded-lg text-[14px] font-bold shadow-md"
+            >
               <CalcIcon className="h-4 w-4 mr-2" />
               Calculate
             </Button>
@@ -154,7 +218,9 @@ export function Calculator({ onBack, onBookNow }: { onBack: () => void; onBookNo
                 <div className="bg-blue-50/50 rounded-lg p-3 flex flex-col justify-center border border-blue-100">
                   <div className="flex items-center gap-2 mb-1">
                     <Building2 className="h-3 w-3 text-blue-500" />
-                    <span className="text-[10px] font-semibold text-slate-600 uppercase">Hall Amount</span>
+                    <span className="text-[10px] font-semibold text-slate-600 uppercase">
+                      Hall Amount
+                    </span>
                   </div>
                   <div className="font-bold text-slate-800 text-sm">₹ {calc.hallAmount}</div>
                 </div>
@@ -162,7 +228,9 @@ export function Calculator({ onBack, onBookNow }: { onBack: () => void; onBookNo
                 <div className="bg-purple-50/50 rounded-lg p-3 flex flex-col justify-center border border-purple-100">
                   <div className="flex items-center gap-2 mb-1">
                     <Tag className="h-3 w-3 text-purple-500" />
-                    <span className="text-[10px] font-semibold text-purple-700 uppercase">Discount <span className="text-black">0%</span></span>
+                    <span className="text-[10px] font-semibold text-purple-700 uppercase">
+                      Discount <span className="text-black">0%</span>
+                    </span>
                   </div>
                   <div className="font-bold text-slate-800 text-sm">₹ {calc.discount}</div>
                 </div>
@@ -170,7 +238,9 @@ export function Calculator({ onBack, onBookNow }: { onBack: () => void; onBookNo
                 <div className="bg-orange-50/50 rounded-lg p-3 flex flex-col justify-center border border-orange-100">
                   <div className="flex items-center gap-2 mb-1">
                     <Wallet className="h-3 w-3 text-orange-500" />
-                    <span className="text-[10px] font-semibold text-orange-600 uppercase">Net Amount</span>
+                    <span className="text-[10px] font-semibold text-orange-600 uppercase">
+                      Net Amount
+                    </span>
                   </div>
                   <div className="font-bold text-slate-800 text-sm">₹ {calc.netAmount}</div>
                 </div>
@@ -178,7 +248,9 @@ export function Calculator({ onBack, onBookNow }: { onBack: () => void; onBookNo
                 <div className="bg-emerald-50/50 rounded-lg p-3 flex flex-col justify-center border border-emerald-100">
                   <div className="flex items-center gap-2 mb-1">
                     <Percent className="h-3 w-3 text-emerald-500" />
-                    <span className="text-[10px] font-semibold text-emerald-600 uppercase">GST (18%)</span>
+                    <span className="text-[10px] font-semibold text-emerald-600 uppercase">
+                      GST (18%)
+                    </span>
                   </div>
                   <div className="font-bold text-slate-800 text-sm">₹ {calc.gst}</div>
                 </div>
@@ -186,7 +258,9 @@ export function Calculator({ onBack, onBookNow }: { onBack: () => void; onBookNo
                 <div className="bg-purple-50/50 rounded-lg p-3 flex flex-col justify-center border border-purple-100">
                   <div className="flex items-center gap-2 mb-1">
                     <ArrowUpCircle className="h-3 w-3 text-purple-500" />
-                    <span className="text-[10px] font-semibold text-purple-600 uppercase">Deposit Amount</span>
+                    <span className="text-[10px] font-semibold text-purple-600 uppercase">
+                      Deposit Amount
+                    </span>
                   </div>
                   <div className="font-bold text-slate-800 text-sm">₹ {calc.deposit}</div>
                 </div>
@@ -194,7 +268,9 @@ export function Calculator({ onBack, onBookNow }: { onBack: () => void; onBookNo
                 <div className="bg-[#0f172a] rounded-lg p-3 flex flex-col justify-center shadow-md">
                   <div className="flex items-center gap-2 mb-1">
                     <Banknote className="h-3 w-3 text-white/80" />
-                    <span className="text-[10px] font-semibold text-white/90 uppercase">Total Amount</span>
+                    <span className="text-[10px] font-semibold text-white/90 uppercase">
+                      Total Amount
+                    </span>
                   </div>
                   <div className="font-bold text-white text-base">₹ {calc.total}</div>
                 </div>
@@ -209,14 +285,18 @@ export function Calculator({ onBack, onBookNow }: { onBack: () => void; onBookNo
                     <tr>
                       <th className="px-5 py-4 text-left font-bold text-slate-700 w-24">S.NO</th>
                       <th className="px-5 py-4 text-left font-bold text-slate-700">Description</th>
-                      <th className="px-5 py-4 text-left font-bold text-slate-700 flex items-center gap-1"><IndianRupee className="h-3 w-3" /> Amount</th>
+                      <th className="px-5 py-4 text-left font-bold text-slate-700 flex items-center gap-1">
+                        <IndianRupee className="h-3 w-3" /> Amount
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr className="border-t border-slate-200">
                       <td className="px-5 py-4 text-slate-600">1</td>
                       <td className="px-5 py-4 text-slate-600 font-medium">Hall Amount</td>
-                      <td className="px-5 py-4 text-slate-800">{calc.hallAmount.toLocaleString()}</td>
+                      <td className="px-5 py-4 text-slate-800">
+                        {calc.hallAmount.toLocaleString()}
+                      </td>
                     </tr>
                     <tr className="border-t border-slate-200">
                       <td className="px-5 py-4 text-slate-600">2</td>
@@ -226,7 +306,9 @@ export function Calculator({ onBack, onBookNow }: { onBack: () => void; onBookNo
                     <tr className="border-t border-slate-200">
                       <td className="px-5 py-4 text-slate-600">3</td>
                       <td className="px-5 py-4 text-slate-600 font-medium">Net Amount</td>
-                      <td className="px-5 py-4 text-slate-800">{calc.netAmount.toLocaleString()}</td>
+                      <td className="px-5 py-4 text-slate-800">
+                        {calc.netAmount.toLocaleString()}
+                      </td>
                     </tr>
                     <tr className="border-t border-slate-200">
                       <td className="px-5 py-4 text-slate-600">4</td>
@@ -239,18 +321,32 @@ export function Calculator({ onBack, onBookNow }: { onBack: () => void; onBookNo
                       <td className="px-5 py-4 text-slate-800">{calc.deposit.toLocaleString()}</td>
                     </tr>
                     <tr className="border-t border-slate-200 bg-[#f8fafc]">
-                      <td className="px-5 py-5 text-slate-800 font-bold col-span-2 text-center" colSpan={2}>Total Amount</td>
-                      <td className="px-5 py-5 text-slate-800 font-bold">{calc.total.toLocaleString()}</td>
+                      <td
+                        className="px-5 py-5 text-slate-800 font-bold col-span-2 text-center"
+                        colSpan={2}
+                      >
+                        Total Amount
+                      </td>
+                      <td className="px-5 py-5 text-slate-800 font-bold">
+                        {calc.total.toLocaleString()}
+                      </td>
                     </tr>
                   </tbody>
                 </table>
               </div>
-              
+
               <div className="flex justify-between items-center mt-6">
-                <Button variant="outline" onClick={onBack} className="bg-white border-slate-200 text-slate-700 font-semibold px-6 py-5 rounded-lg shadow-sm">
+                <Button
+                  variant="outline"
+                  onClick={onBack}
+                  className="bg-white border-slate-200 text-slate-700 font-semibold px-6 py-5 rounded-lg shadow-sm"
+                >
                   <ArrowLeft className="h-4 w-4 mr-2" /> Previous
                 </Button>
-                <Button onClick={onBookNow} className="bg-[#bbf7d0] hover:bg-[#86efac] border border-[#4ade80] text-[#166534] font-bold px-8 py-5 rounded-lg shadow-sm">
+                <Button
+                  onClick={onBookNow}
+                  className="bg-[#bbf7d0] hover:bg-[#86efac] border border-[#4ade80] text-[#166534] font-bold px-8 py-5 rounded-lg shadow-sm"
+                >
                   <CheckCircle2 className="h-4 w-4 mr-2" /> Book Now
                 </Button>
               </div>

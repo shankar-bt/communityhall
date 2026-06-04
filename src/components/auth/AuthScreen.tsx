@@ -15,8 +15,20 @@ import "./AuthPage.css";
 
 const translations = {
   en: {
-    heroTitle: <>Digital Services for<br />Every Citizen.</>,
-    heroSubtitle: <>One Portal for all Government Services<br />and Citizen Welfare</>,
+    heroTitle: (
+      <>
+        Digital Services for
+        <br />
+        Every Citizen.
+      </>
+    ),
+    heroSubtitle: (
+      <>
+        One Portal for all Government Services
+        <br />
+        and Citizen Welfare
+      </>
+    ),
     secure: "Secure",
     secureSub: "Your data is safe with us",
     accessible: "Accessible",
@@ -59,11 +71,23 @@ const translations = {
     usernameError: "Username must contain only letters (A-Z, a-z)",
     mobileError: "Mobile number must be exactly 10 digits",
     fullNameError: "Full Name must contain only letters (A-Z, a-z)",
-    requiredError: "This field is required"
+    requiredError: "This field is required",
   },
   ta: {
-    heroTitle: <>ஒவ்வொரு குடிமகனுக்கும்<br />டிஜிட்டல் சேவைகள்.</>,
-    heroSubtitle: <>அனைத்து அரசு சேவைகள் மற்றும்<br />மக்கள் நலனுக்கான ஒரே தளம்</>,
+    heroTitle: (
+      <>
+        ஒவ்வொரு குடிமகனுக்கும்
+        <br />
+        டிஜிட்டல் சேவைகள்.
+      </>
+    ),
+    heroSubtitle: (
+      <>
+        அனைத்து அரசு சேவைகள் மற்றும்
+        <br />
+        மக்கள் நலனுக்கான ஒரே தளம்
+      </>
+    ),
     secure: "பாதுகாப்பானது",
     secureSub: "உங்கள் தரவு பாதுகாப்பாக உள்ளது",
     accessible: "அணுகக்கூடியது",
@@ -106,8 +130,8 @@ const translations = {
     usernameError: "பயனர் பெயர் எழுத்துக்களை (A-Z, a-z) மட்டுமே கொண்டிருக்க வேண்டும்",
     mobileError: "கைபேசி எண் சரியாக 10 இலக்கங்களாக இருக்க வேண்டும்",
     fullNameError: "முழு பெயர் எழுத்துக்களை (A-Z, a-z) மட்டுமே கொண்டிருக்க வேண்டும்",
-    requiredError: "இப்புலம் தேவையானது"
-  }
+    requiredError: "இப்புலம் தேவையானது",
+  },
 } as const;
 
 type Lang = keyof typeof translations;
@@ -207,7 +231,9 @@ export function AuthScreen({ onSuccess }: { onSuccess?: () => void }) {
             className="auth-hero-content"
           >
             <h1 className="auth-hero-title">
-              <span className="quote-mark">&ldquo;</span>{t.heroTitle}<span className="quote-mark">&rdquo;</span>
+              <span className="quote-mark">&ldquo;</span>
+              {t.heroTitle}
+              <span className="quote-mark">&rdquo;</span>
             </h1>
 
             {/* Tri-color accent bar */}
@@ -256,9 +282,7 @@ export function AuthScreen({ onSuccess }: { onSuccess?: () => void }) {
                   },
                 ].map((item, i) => (
                   <div key={i} className="auth-glass-item">
-                    <div className={`auth-glass-icon ${item.colorClass}`}>
-                      {item.icon}
-                    </div>
+                    <div className={`auth-glass-icon ${item.colorClass}`}>{item.icon}</div>
                     <p className="auth-glass-label">{item.label}</p>
                     <p className="auth-glass-sub">{item.sub}</p>
                   </div>
@@ -276,17 +300,16 @@ export function AuthScreen({ onSuccess }: { onSuccess?: () => void }) {
               <button onClick={() => changeFontSize(-2)} className="font-btn">
                 A-
               </button>
-              <button onClick={() => setFontSize(16)} className="font-btn font-btn-mid">A</button>
+              <button onClick={() => setFontSize(16)} className="font-btn font-btn-mid">
+                A
+              </button>
               <button onClick={() => changeFontSize(2)} className="font-btn">
                 A+
               </button>
             </div>
 
             <div className="lang-dropdown-wrapper">
-              <button 
-                className="lang-btn" 
-                onClick={() => setLang(lang === "en" ? "ta" : "en")}
-              >
+              <button className="lang-btn" onClick={() => setLang(lang === "en" ? "ta" : "en")}>
                 <Globe size={14} />
                 {lang === "en" ? "தமிழ்" : "English"}
               </button>
@@ -337,7 +360,9 @@ export function AuthScreen({ onSuccess }: { onSuccess?: () => void }) {
                         <>
                           <div className="field-group">
                             <label className="field-label">{t.username}</label>
-                            <div className={`field-input-wrapper ${errors.username ? 'has-error' : ''}`}>
+                            <div
+                              className={`field-input-wrapper ${errors.username ? "has-error" : ""}`}
+                            >
                               <User size={18} className="field-icon" />
                               <input
                                 type="text"
@@ -354,12 +379,16 @@ export function AuthScreen({ onSuccess }: { onSuccess?: () => void }) {
                                 }}
                               />
                             </div>
-                            {errors.username && <span className="field-error-msg">{errors.username}</span>}
+                            {errors.username && (
+                              <span className="field-error-msg">{errors.username}</span>
+                            )}
                           </div>
 
                           <div className="field-group">
                             <label className="field-label">{t.mobileNumber}</label>
-                            <div className={`field-input-wrapper ${errors.loginMobile ? 'has-error' : ''}`}>
+                            <div
+                              className={`field-input-wrapper ${errors.loginMobile ? "has-error" : ""}`}
+                            >
                               <Phone size={18} className="field-icon" />
                               <input
                                 type="tel"
@@ -376,7 +405,9 @@ export function AuthScreen({ onSuccess }: { onSuccess?: () => void }) {
                                 }}
                               />
                             </div>
-                            {errors.loginMobile && <span className="field-error-msg">{errors.loginMobile}</span>}
+                            {errors.loginMobile && (
+                              <span className="field-error-msg">{errors.loginMobile}</span>
+                            )}
                           </div>
 
                           <div className="field-group">
@@ -410,18 +441,31 @@ export function AuthScreen({ onSuccess }: { onSuccess?: () => void }) {
                           </div>
                         </>
                       ) : (
-                        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="auth-fields">
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          className="auth-fields"
+                        >
                           <div className="field-group">
                             <label className="field-label">{t.enterOtp}</label>
                             <div className="field-input-wrapper">
                               <ShieldCheck size={18} className="field-icon" />
-                              <input type="text" maxLength={6} placeholder={t.enterOtpPlaceholder} className="field-input otp-input" />
+                              <input
+                                type="text"
+                                maxLength={6}
+                                placeholder={t.enterOtpPlaceholder}
+                                className="field-input otp-input"
+                              />
                             </div>
                             <div style={{ textAlign: "right", marginTop: "0.5rem" }}>
-                              <button type="button" className="resend-otp-btn">{t.resendOtp}</button>
+                              <button type="button" className="resend-otp-btn">
+                                {t.resendOtp}
+                              </button>
                             </div>
                           </div>
-                          <button type="button" onClick={() => onSuccess?.()} className="btn-login">{t.verifyLoginBtn}</button>
+                          <button type="button" onClick={() => onSuccess?.()} className="btn-login">
+                            {t.verifyLoginBtn}
+                          </button>
                         </motion.div>
                       )}
                     </motion.div>
@@ -438,7 +482,9 @@ export function AuthScreen({ onSuccess }: { onSuccess?: () => void }) {
                         <>
                           <div className="field-group">
                             <label className="field-label">{t.fullName}</label>
-                            <div className={`field-input-wrapper ${errors.fullName ? 'has-error' : ''}`}>
+                            <div
+                              className={`field-input-wrapper ${errors.fullName ? "has-error" : ""}`}
+                            >
                               <User size={18} className="field-icon" />
                               <input
                                 type="text"
@@ -455,12 +501,16 @@ export function AuthScreen({ onSuccess }: { onSuccess?: () => void }) {
                                 }}
                               />
                             </div>
-                            {errors.fullName && <span className="field-error-msg">{errors.fullName}</span>}
+                            {errors.fullName && (
+                              <span className="field-error-msg">{errors.fullName}</span>
+                            )}
                           </div>
 
                           <div className="field-group">
                             <label className="field-label">{t.mobileNumber}</label>
-                            <div className={`field-input-wrapper ${errors.registerMobile ? 'has-error' : ''}`}>
+                            <div
+                              className={`field-input-wrapper ${errors.registerMobile ? "has-error" : ""}`}
+                            >
                               <Phone size={18} className="field-icon" />
                               <input
                                 type="tel"
@@ -477,7 +527,9 @@ export function AuthScreen({ onSuccess }: { onSuccess?: () => void }) {
                                 }}
                               />
                             </div>
-                            {errors.registerMobile && <span className="field-error-msg">{errors.registerMobile}</span>}
+                            {errors.registerMobile && (
+                              <span className="field-error-msg">{errors.registerMobile}</span>
+                            )}
                           </div>
 
                           <div className="field-group">
@@ -525,18 +577,35 @@ export function AuthScreen({ onSuccess }: { onSuccess?: () => void }) {
                           </div>
                         </>
                       ) : (
-                        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="auth-fields">
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          className="auth-fields"
+                        >
                           <div className="field-group">
                             <label className="field-label">{t.enterOtp}</label>
                             <div className="field-input-wrapper">
                               <ShieldCheck size={18} className="field-icon" />
-                              <input type="text" maxLength={6} placeholder={t.enterOtpPlaceholder} className="field-input otp-input" />
+                              <input
+                                type="text"
+                                maxLength={6}
+                                placeholder={t.enterOtpPlaceholder}
+                                className="field-input otp-input"
+                              />
                             </div>
                             <div style={{ textAlign: "right", marginTop: "0.5rem" }}>
-                              <button type="button" className="resend-otp-btn">{t.resendOtp}</button>
+                              <button type="button" className="resend-otp-btn">
+                                {t.resendOtp}
+                              </button>
                             </div>
                           </div>
-                          <button type="button" onClick={() => onSuccess?.()} className="btn-login btn-register">{t.verifyRegisterBtn}</button>
+                          <button
+                            type="button"
+                            onClick={() => onSuccess?.()}
+                            className="btn-login btn-register"
+                          >
+                            {t.verifyRegisterBtn}
+                          </button>
                         </motion.div>
                       )}
                     </motion.div>

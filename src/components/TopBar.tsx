@@ -11,13 +11,18 @@ export function TopBar({ onLogout }: { onLogout?: () => void }) {
   return (
     <header className="sticky top-0 z-40 bg-white border-b border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)]">
       <div className="container mx-auto max-w-7xl flex items-center justify-between px-4 py-3 lg:px-8">
-
         {/* Left: Logo and App Name */}
         <div className="flex items-center gap-3">
-          <img src="/chennai_corporation_emblem.png" alt="Chennai Corporation" className="h-10 w-10 lg:h-11 lg:w-11 object-contain" />
+          <img
+            src="/chennai_corporation_emblem.png"
+            alt="Chennai Corporation"
+            className="h-10 w-10 lg:h-11 lg:w-11 object-contain"
+          />
           <div className="leading-tight text-[#1e3a8a]">
             <h1 className="text-[12px] lg:text-[14px] font-bold tracking-tight">{t("gccName")}</h1>
-            <p className="text-[10px] lg:text-[11px] font-tamil font-semibold mt-0.5">{t("gccTamil")}</p>
+            <p className="text-[10px] lg:text-[11px] font-tamil font-semibold mt-0.5">
+              {t("gccTamil")}
+            </p>
           </div>
         </div>
 
@@ -59,9 +64,16 @@ export function TopBar({ onLogout }: { onLogout?: () => void }) {
           </button>
 
           {user ? (
-            <div className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition" onClick={onLogout}>
+            <div
+              className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition"
+              onClick={onLogout}
+            >
               <div className="h-10 w-10 rounded-full bg-slate-200 overflow-hidden shadow-sm border border-slate-200">
-                <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`} alt="User" className="h-full w-full object-cover" />
+                <img
+                  src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`}
+                  alt="User"
+                  className="h-full w-full object-cover"
+                />
               </div>
               <div className="hidden sm:block leading-tight text-left">
                 <p className="text-[13px] font-bold text-[#1e293b]">{user.name}</p>
@@ -70,7 +82,6 @@ export function TopBar({ onLogout }: { onLogout?: () => void }) {
             </div>
           ) : null}
         </div>
-
       </div>
     </header>
   );
