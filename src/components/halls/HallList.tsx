@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useApp, type Hall } from "@/contexts/AppContext";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { HALLS } from "@/lib/halls";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -30,7 +29,7 @@ export function HallList({
   onSelect: (h: Hall) => void;
   onBook: (h: Hall) => void;
 }) {
-  const { setBooking } = useApp();
+  const { setBooking, halls, loadingHalls } = useApp();
   const { t } = useLanguage();
   const [filters, setFilters] = useState({ from: "", to: "", start: "", end: "" });
   const todayStr = getTodayString();
@@ -204,8 +203,17 @@ export function HallList({
       </div>
 
       {/* Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {HALLS.map((h) => (
+      {loadingHalls ? (
+        <div className="flex justify-center items-center py-20 text-slate-500 font-medium">
+          {t("Loading halls...")}
+        </div>
+      ) : halls.length === 0 ? (
+        <div className="flex justify-center items-center py-20 text-slate-500 font-medium">
+          {t("No halls available")}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {halls.map((h) => (
           <Card
             key={h.id}
             className="overflow-hidden bg-white/95 backdrop-blur-sm border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] transition-all rounded-[1.25rem] flex flex-col group"
@@ -294,7 +302,8 @@ export function HallList({
             </div>
           </Card>
         ))}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

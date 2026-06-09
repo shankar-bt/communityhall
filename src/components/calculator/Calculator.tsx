@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useApp } from "@/contexts/AppContext";
-import { HALLS } from "@/lib/halls";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -26,8 +25,8 @@ import {
 } from "lucide-react";
 
 export function Calculator({ onBack, onBookNow }: { onBack: () => void; onBookNow: () => void }) {
-  const { t, booking, setBooking } = useApp();
-  const hall = booking.hall!;
+  const { booking, setBooking, halls } = useApp();
+  const [selectedHall, setSelectedHall] = useState(booking.hall || halls[0]);
   const [reason, setReason] = useState(booking.reason || "Marriage");
   const [days, setDays] = useState(booking.numDays || 1);
   const [start, setStart] = useState(booking.startPeriod || "Morning (6:00 AM)");
@@ -36,14 +35,15 @@ export function Calculator({ onBack, onBookNow }: { onBack: () => void; onBookNo
   const calc = booking.calc;
 
   const compute = () => {
-    const hallAmount = hall.rent * days;
+    const hallAmount = selectedHall.rent * days;
     const discount = days >= 3 ? Math.round(hallAmount * 0.05) : 0;
     const netAmount = hallAmount - discount;
-    const gst = Math.round(netAmount * (hall.gstPercentage / 100 || 0.18));
-    const deposit = hall.deposit;
+    const gst = Math.round(netAmount * (selectedHall.gstPercentage / 100 || 0.18));
+    const deposit = selectedHall.deposit;
     const total = netAmount + gst + deposit;
     setBooking((b) => ({
       ...b,
+      hall: selectedHall,
       reason,
       numDays: days,
       startPeriod: start,
@@ -88,17 +88,20 @@ export function Calculator({ onBack, onBookNow }: { onBack: () => void; onBookNo
           <div className="flex-1 max-w-md">
             <h2 className="text-sm font-bold text-slate-800 mb-1">Select Hall</h2>
             <Select
-              value={hall.id}
+              value={selectedHall?.id}
               onValueChange={(val) => {
-                const newHall = HALLS.find((h) => h.id === val);
-                if (newHall) setBooking((b) => ({ ...b, hall: newHall, calc: null }));
+                const newHall = halls.find((h) => h.id === val);
+                if (newHall) {
+                  setSelectedHall(newHall);
+                  setBooking((b) => ({ ...b, hall: newHall, calc: null }));
+                }
               }}
             >
               <SelectTrigger className="bg-white border-slate-200">
                 <SelectValue placeholder="Select a hall" />
               </SelectTrigger>
               <SelectContent>
-                {HALLS.map((h) => (
+                {halls.map((h) => (
                   <SelectItem key={h.id} value={h.id}>
                     {h.name}
                   </SelectItem>

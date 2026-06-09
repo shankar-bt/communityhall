@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { fetchHalls, HallDetailsApi } from "@/lib/hallsApi";
 import { dict, type Lang, type TKey } from "@/lib/i18n";
 import { useLanguage } from "./LanguageContext";
 
@@ -80,6 +81,8 @@ interface Ctx {
   booking: BookingState;
   setBooking: React.Dispatch<React.SetStateAction<BookingState>>;
   isInitialized: boolean;
+  halls: Hall[];
+  loadingHalls: boolean;
 }
 
 const AppCtx = createContext<Ctx | null>(null);
@@ -109,6 +112,47 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [booking, setBooking] = useState<BookingState>(initialBooking);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [halls, setHalls] = useState<Hall[]>([]);
+  const [loadingHalls, setLoadingHalls] = useState(true);
+
+  useEffect(() => {
+    fetchHalls()
+      .then((data) => {
+        if (data && data.length > 0) {
+          const BACKEND_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8062";
+          const apiHalls: Hall[] = data.map((d: HallDetailsApi) => {
+            const rawImages = d.hallImagesList?.map((img: any) => img.hallImage).filter(Boolean) || [];
+            const fullImages = rawImages.map(url => url.startsWith("http") ? url : `${BACKEND_URL}${url.startsWith('/') ? '' : '/'}${url}`);
+            const defaultImg = "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&q=80";
+
+            return {
+              id: String(d.hallId),
+              name: d.hallName || "Community Hall",
+              image: fullImages.length > 0 ? fullImages[0] : defaultImg,
+              rating: 4.5,
+              rent: d.fullDayRent || 0,
+              halfDayRent: d.halfDayRent || 0,
+              deposit: d.depositAmount || 0,
+              halfDayDeposit: d.halfDepositAmount || 0,
+              zone: d.zone || "",
+              division: d.division || "",
+              landmark: d.landMark || "",
+              capacity: d.seatingCapacity || 500,
+              images: fullImages.length > 0 ? fullImages : [defaultImg],
+              address: `${d.doorNo ? d.doorNo + ", " : ""}${d.street ? d.street + ", " : ""}${d.area || ""}, ${d.division || ""}, ${d.zone || ""}`,
+              totalArea: String(d.hallArea || ""),
+              parkingCapacity: String(d.parkingCapacity || ""),
+              gstPercentage: d.gst || 18,
+              ebChargePerUnit: d.ebCostPerUnit || 10,
+              caretakerNumber: String(d.hallInchargeMobno || "")
+            };
+          });
+          setHalls(apiHalls);
+        }
+      })
+      .catch((err) => console.error("Failed to fetch halls", err))
+      .finally(() => setLoadingHalls(false));
+  }, []);
 
   // Load from localStorage once on mount (client-side only)
   useEffect(() => {
@@ -171,8 +215,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       booking,
       setBooking,
       isInitialized,
+      halls,
+      loadingHalls,
     }),
-    [theme, lang, fontSize, user, booking, isInitialized],
+    [theme, lang, fontSize, user, booking, isInitialized, halls, loadingHalls],
   );
 
   return <AppCtx.Provider value={value}>{children}</AppCtx.Provider>;
