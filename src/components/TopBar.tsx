@@ -47,23 +47,23 @@ export function TopBar({ onLogout }: { onLogout?: () => void }) {
           <h2 className="text-xl font-bold tracking-tight">{t("appName")}</h2>
         </div>
 
-        <div className="flex items-center gap-4">
-          <div className="flex border border-slate-200 rounded-lg overflow-hidden text-[12px] font-bold bg-white shadow-sm">
+        <div className="flex items-center gap-2 sm:gap-4">
+          <div className="flex border border-slate-200 rounded-lg overflow-hidden text-[10px] sm:text-[12px] font-bold bg-white shadow-sm">
             <button
               onClick={() => setFontSize("small")}
-              className={`px-3 py-1.5 hover:bg-slate-50 transition ${fontSize === "small" ? "bg-slate-100 text-[#1e3a8a]" : "text-slate-600"}`}
+              className={`px-1.5 sm:px-3 py-1 sm:py-1.5 hover:bg-slate-50 transition ${fontSize === "small" ? "bg-slate-100 text-[#1e3a8a]" : "text-slate-600"}`}
             >
               A-
             </button>
             <button
               onClick={() => setFontSize("medium")}
-              className={`px-3 py-1.5 hover:bg-slate-50 transition border-l border-slate-200 ${fontSize === "medium" ? "bg-slate-100 text-[#1e3a8a]" : "text-slate-600"}`}
+              className={`px-1.5 sm:px-3 py-1 sm:py-1.5 hover:bg-slate-50 transition border-l border-slate-200 ${fontSize === "medium" ? "bg-slate-100 text-[#1e3a8a]" : "text-slate-600"}`}
             >
               A
             </button>
             <button
               onClick={() => setFontSize("large")}
-              className={`px-3 py-1.5 hover:bg-slate-50 transition border-l border-slate-200 ${fontSize === "large" ? "bg-slate-100 text-[#1e3a8a]" : "text-slate-600"}`}
+              className={`px-1.5 sm:px-3 py-1 sm:py-1.5 hover:bg-slate-50 transition border-l border-slate-200 ${fontSize === "large" ? "bg-slate-100 text-[#1e3a8a]" : "text-slate-600"}`}
             >
               A+
             </button>

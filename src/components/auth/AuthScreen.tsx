@@ -165,6 +165,7 @@ export function AuthScreen({ onSuccess }: { onSuccess?: (userData?: any) => void
   const [registerLocation, setRegisterLocation] = useState("");
   const [registerPincode, setRegisterPincode] = useState("");
   const [registerOtp, setRegisterOtp] = useState("");
+  const [registerStep, setRegisterStep] = useState(1);
 
   // Error State
   const [errors, setErrors] = useState<{
@@ -198,6 +199,7 @@ export function AuthScreen({ onSuccess }: { onSuccess?: (userData?: any) => void
     setRegisterLocation("");
     setRegisterPincode("");
     setRegisterOtp("");
+    setRegisterStep(1);
   }, [activeTab]);
 
   const t = translations[lang];
@@ -622,8 +624,10 @@ export function AuthScreen({ onSuccess }: { onSuccess?: (userData?: any) => void
                     >
                       {!otpSent ? (
                         <>
-                          <div className="field-group">
-                            <label className="field-label">{t.fullName}</label>
+                          {registerStep === 1 && (
+                            <>
+                              <div className="field-group">
+                                <label className="field-label">{t.fullName}</label>
                             <div
                               className={`field-input-wrapper ${errors.fullName ? "has-error" : ""}`}
                             >
@@ -710,8 +714,49 @@ export function AuthScreen({ onSuccess }: { onSuccess?: (userData?: any) => void
                             )}
                           </div>
 
-                          <div className="field-group">
-                            <label className="field-label">Door No</label>
+                          <div className="field-group" style={{ marginTop: "1rem" }}>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const newErrors: typeof errors = {};
+                                if (!registerFullName.trim()) newErrors.fullName = t.requiredError;
+                                else if (!/^[a-zA-Z\s]+$/.test(registerFullName)) newErrors.fullName = t.fullNameError;
+
+                                if (!registerMobile.trim()) newErrors.registerMobile = t.requiredError;
+                                else if (registerMobile.length !== 10) newErrors.registerMobile = t.mobileError;
+
+                                if (!registerAadhar.trim() || registerAadhar.length !== 12) newErrors.registerAadhar = "Valid 12-digit Aadhar required";
+
+                                if (Object.keys(newErrors).length > 0) {
+                                  setErrors(newErrors);
+                                } else {
+                                  setErrors({});
+                                  setRegisterStep(2);
+                                }
+                              }}
+                              className="btn-send-otp"
+                            >
+                              Next
+                            </button>
+                          </div>
+                          </>
+                        )}
+
+                        {registerStep === 2 && (
+                          <>
+                            <div className="field-group flex gap-2" style={{ marginBottom: "0.5rem" }}>
+                              <button
+                                type="button"
+                                onClick={() => setRegisterStep(1)}
+                                className="btn-send-otp"
+                                style={{ backgroundColor: "#64748b", flex: 1 }}
+                              >
+                                Back
+                              </button>
+                            </div>
+
+                            <div className="field-group">
+                              <label className="field-label">Door No</label>
                             <div className={`field-input-wrapper ${errors.registerDoorNo ? "has-error" : ""}`}>
                               <input
                                 type="text"
@@ -812,21 +857,6 @@ export function AuthScreen({ onSuccess }: { onSuccess?: (userData?: any) => void
                               type="button"
                               onClick={async () => {
                                 const newErrors: typeof errors = {};
-                                if (!registerFullName.trim()) {
-                                  newErrors.fullName = t.requiredError;
-                                } else if (!/^[a-zA-Z\s]+$/.test(registerFullName)) {
-                                  newErrors.fullName = t.fullNameError;
-                                }
-
-                                if (!registerMobile.trim()) {
-                                  newErrors.registerMobile = t.requiredError;
-                                } else if (registerMobile.length !== 10) {
-                                  newErrors.registerMobile = t.mobileError;
-                                }
-
-                                if (!registerAadhar.trim() || registerAadhar.length !== 12) {
-                                  newErrors.registerAadhar = "Valid 12-digit Aadhar required";
-                                }
                                 if (!registerDoorNo.trim()) newErrors.registerDoorNo = t.requiredError;
                                 if (!registerStreet.trim()) newErrors.registerStreet = t.requiredError;
                                 if (!registerArea.trim()) newErrors.registerArea = t.requiredError;
@@ -855,6 +885,8 @@ export function AuthScreen({ onSuccess }: { onSuccess?: (userData?: any) => void
                               {t.sendOtp}
                             </button>
                           </div>
+                          </>
+                        )}
                         </>
                       ) : (
                         <motion.div

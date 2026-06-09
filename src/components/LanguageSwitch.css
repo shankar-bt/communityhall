@@ -4,21 +4,26 @@
   --_slider-bg-clr: rgba(30, 58, 138, 0.65); /* slider color unchecked */
   --_slider-bg-clr-on: rgba(30, 58, 138, 1); /* slider color checked */
   --_slider-txt-clr: #ffffff;
-  --_label-padding: 0.35rem 1rem; /* padding around the labels */
+  --_label-padding: 0.35rem 0; /* removed horizontal padding, relying on fixed width */
   --_switch-easing: cubic-bezier(0.47, 1.64, 0.41, 0.8); /* easing on toggle switch */
   
   color: white;
-  width: fit-content;
-  display: flex;
-  justify-content: center;
+  width: 90px; /* Small width for mobile */
   position: relative;
   border-radius: 9999px;
   cursor: pointer;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   isolation: isolate;
-  font-size: 13px;
+  font-size: 10px; /* Smaller font on mobile */
   font-weight: 600;
+}
+
+@media (min-width: 640px) {
+  .lang-switch-wrapper .switch {
+    width: 110px;
+    font-size: 12px;
+  }
 }
 
 .lang-switch-wrapper .switch input[type="checkbox"] {

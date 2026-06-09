@@ -13,8 +13,8 @@ const LanguageSwitch = () => {
           checked={lang === 'en'} 
           onChange={(e) => setLang(e.target.checked ? 'en' : 'ta')} 
         />
-        <span>தமிழ்</span>
-        <span>English</span>
+        <span>{lang === 'ta' ? 'தமிழ்' : 'Ta'}</span>
+        <span>{lang === 'en' ? 'English' : 'En'}</span>
       </label>
     </div>
   );
