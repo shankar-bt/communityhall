@@ -9,7 +9,6 @@ import { Calculator } from "@/components/calculator/Calculator";
 import { BookingWizard } from "@/components/booking/BookingWizard";
 import { Lock, ShieldCheck, Globe, Users } from "lucide-react";
 import { z } from "zod";
-import { HALLS } from "@/lib/halls";
 
 const appSearchSchema = z.object({
   view: z.enum(["list", "details", "calculator", "wizard"]).optional().catch("list"),
@@ -38,19 +37,19 @@ export const Route = createFileRoute("/")({
 });
 
 function App() {
-  const { user, setUser, booking, setBooking, isInitialized } = useApp();
+  const { user, setUser, booking, setBooking, isInitialized, halls } = useApp();
   const { view = "list", hallId } = Route.useSearch();
   const navigate = Route.useNavigate();
 
   // Sync hallId from search query parameters to context booking state
   useEffect(() => {
-    if (hallId && (!booking.hall || booking.hall.id !== hallId)) {
-      const selectedHall = HALLS.find((h) => h.id === hallId);
+    if (hallId && halls.length > 0 && (!booking.hall || booking.hall.id !== hallId)) {
+      const selectedHall = halls.find((h) => h.id === hallId);
       if (selectedHall) {
         setBooking((b) => ({ ...b, hall: selectedHall }));
       }
     }
-  }, [hallId, booking.hall, setBooking]);
+  }, [hallId, halls, booking.hall, setBooking]);
 
   // Handle redirect if user refreshes on pages that require specific state
   useEffect(() => {
@@ -71,8 +70,12 @@ function App() {
   if (!user) {
     return (
       <AuthScreen
-        onSuccess={() => {
-          setUser({ name: "Citizen User", contact: "9876543210", role: "citizen" });
+        onSuccess={(userData) => {
+          if (userData) {
+            setUser({ name: userData.name, contact: userData.contact || "N/A", role: userData.role });
+          } else {
+            setUser({ name: "Citizen User", contact: "9876543210", role: "citizen" });
+          }
           navigate({ search: { view: "list", hallId: undefined } });
         }}
       />
@@ -107,6 +110,7 @@ function App() {
             onCalculate={() =>
               navigate({ search: { view: "calculator", hallId: booking.hall?.id } })
             }
+            onSelectHall={selectHall}
           />
         )}
         {view === "calculator" && booking.hall && (

@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useApp, type Hall } from "@/contexts/AppContext";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { HALLS } from "@/lib/halls";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -39,7 +38,7 @@ export function HallDetails({
   onCalculate: () => void;
 }) {
   const { t } = useLanguage();
-  const { setBooking } = useApp();
+  const { halls, setBooking } = useApp();
   const [idx, setIdx] = useState(0);
   const [date, setDate] = useState<Date | undefined>(new Date());
 
@@ -58,7 +57,7 @@ export function HallDetails({
             <Select
               value={selectedHall.id}
               onValueChange={(val) => {
-                const newHall = HALLS.find((h) => h.id === val);
+                const newHall = halls.find((h) => h.id === val);
                 if (newHall) setBooking((b) => ({ ...b, hall: newHall }));
               }}
             >
@@ -66,7 +65,7 @@ export function HallDetails({
                 <SelectValue placeholder="Select a hall" />
               </SelectTrigger>
               <SelectContent>
-                {HALLS.map((h) => (
+                {halls.map((h) => (
                   <SelectItem key={h.id} value={h.id}>
                     {h.name}
                   </SelectItem>
@@ -92,20 +91,22 @@ export function HallDetails({
 
             <div className="relative aspect-[16/9] bg-slate-100 rounded-lg overflow-hidden border border-slate-200 mb-3 group">
               <img
-                src={selectedHall.images[idx]}
+                src={selectedHall.images?.[idx] || selectedHall.image}
                 alt={selectedHall.name}
                 className="h-full w-full object-cover transition-opacity duration-300"
               />
               <button
                 onClick={() =>
-                  setIdx((idx - 1 + selectedHall.images.length) % selectedHall.images.length)
+                  setIdx(
+                    (idx - 1 + (selectedHall.images?.length || 1)) % (selectedHall.images?.length || 1)
+                  )
                 }
                 className="absolute left-2 top-1/2 -translate-y-1/2 grid place-items-center h-10 w-10 rounded-full bg-white/90 shadow text-slate-700 hover:bg-white opacity-0 group-hover:opacity-100 transition-opacity"
               >
                 <ChevronLeft className="h-6 w-6" />
               </button>
               <button
-                onClick={() => setIdx((idx + 1) % selectedHall.images.length)}
+                onClick={() => setIdx((idx + 1) % (selectedHall.images?.length || 1))}
                 className="absolute right-2 top-1/2 -translate-y-1/2 grid place-items-center h-10 w-10 rounded-full bg-white/90 shadow text-slate-700 hover:bg-white opacity-0 group-hover:opacity-100 transition-opacity"
               >
                 <ChevronRight className="h-6 w-6" />
@@ -113,7 +114,7 @@ export function HallDetails({
             </div>
 
             <div className="flex gap-3 overflow-x-auto pb-1 mt-auto">
-              {selectedHall.images.map((src, i) => (
+              {(selectedHall.images && selectedHall.images.length > 0 ? selectedHall.images : [selectedHall.image]).map((src, i) => (
                 <button
                   key={i}
                   onClick={() => setIdx(i)}
@@ -137,6 +138,12 @@ export function HallDetails({
                 selected={date}
                 onSelect={setDate}
                 disabled={{ before: new Date(new Date().setHours(0, 0, 0, 0)) }}
+                modifiers={{
+                  available: (d) => d >= new Date(new Date().setHours(0, 0, 0, 0))
+                }}
+                modifiersClassNames={{
+                  available: "bg-[#22c55e] text-white hover:bg-[#16a34a] hover:text-white"
+                }}
                 className="rounded-md border-0 pointer-events-auto bg-transparent p-0 transform scale-[1.05]"
               />
             </div>
