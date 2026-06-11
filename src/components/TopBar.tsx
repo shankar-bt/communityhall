@@ -1,15 +1,15 @@
 import { useApp } from "@/contexts/AppContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useFontSize } from "@/contexts/FontSizeContext";
-import { Building2, LogOut } from "lucide-react";
+import { Building2, LogOut, Menu } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import LanguageSwitch from "./LanguageSwitch";
 
-export function TopBar({ onLogout }: { onLogout?: () => void }) {
+export function TopBar({ onLogout, onToggleSidebar }: { onLogout?: () => void; onToggleSidebar?: () => void }) {
   const { t } = useLanguage();
   const { user } = useApp();
   const { fontSize, setFontSize } = useFontSize();
-
+  
   const [showDropdown, setShowDropdown] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -25,9 +25,19 @@ export function TopBar({ onLogout }: { onLogout?: () => void }) {
   }, []);
 
   return (
-    <header className="sticky top-0 z-40 bg-white border-b border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)]">
+    <>
+    <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] w-full">
       <div className="container mx-auto max-w-7xl flex items-center justify-between px-4 py-3 lg:px-8">
         <div className="flex items-center gap-3">
+          {onToggleSidebar && (
+            <button
+              onClick={onToggleSidebar}
+              className="md:hidden p-1.5 rounded-lg text-[#1e3a8a] hover:bg-slate-50 transition-colors focus:outline-none"
+              title="Toggle Sidebar"
+            >
+              <Menu className="h-6 w-6" />
+            </button>
+          )}
           <img
             src="/chennai_corporation_emblem.png"
             alt="Chennai Corporation"
@@ -108,8 +118,7 @@ export function TopBar({ onLogout }: { onLogout?: () => void }) {
       </div>
     </header>
 
-    {
-    showLogoutModal && (
+    {showLogoutModal && (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
         <div className="bg-white rounded-xl shadow-xl max-w-sm w-full p-6 animate-in zoom-in-95 duration-200">
           <h3 className="text-lg font-bold text-slate-900 mb-2">Confirm Logout</h3>
@@ -133,8 +142,7 @@ export function TopBar({ onLogout }: { onLogout?: () => void }) {
           </div>
         </div>
       </div>
-    )
-  }
+    )}
     </>
   );
 }

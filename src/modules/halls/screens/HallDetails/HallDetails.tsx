@@ -21,8 +21,6 @@ import {
   IndianRupee,
   Calculator,
   MapPin,
-  Map,
-  Navigation,
   Maximize,
   Users,
   Car,
@@ -39,21 +37,29 @@ export function HallDetails({
 }) {
   const { t } = useLanguage();
   const { halls, setBooking } = useApp();
-  const [idx, setIdx] = useState(0);
   const [date, setDate] = useState<Date | undefined>(new Date());
+  const [idx, setIdx] = useState(0);
 
-  const selectedHall = hall;
+  const selectedHall = hall || halls[0];
+
+  if (!selectedHall) {
+    return (
+      <div className="p-8 text-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-800 mx-auto"></div>
+        <p className="mt-4 text-slate-500 font-medium">Loading hall details...</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-full bg-gradient-to-br from-orange-50/90 via-white/90 to-blue-100/90 pb-20">
-      <div className="container mx-auto px-4 py-6 max-w-6xl animate-in fade-in slide-in-from-right-4 duration-300">
-        {/* Header / Select Hall */}
-        <Card className="p-4 mb-6 flex items-center gap-4 bg-white/70 backdrop-blur-md border-white/60 shadow-sm rounded-xl">
-          <div className="bg-blue-50 p-3 rounded-lg text-[#1e3a8a]">
-            <Building2 className="h-7 w-7" />
-          </div>
-          <div className="flex-1 max-w-md">
-            <h2 className="text-sm font-bold text-slate-800 mb-1">Select Hall</h2>
+    <div className="container mx-auto px-4 py-8 lg:px-8 max-w-7xl animate-in fade-in duration-500">
+      <div className="space-y-6">
+        {/* Header Control Card */}
+        <Card className="bg-white/75 backdrop-blur-md border-white/60 shadow-sm rounded-xl p-4 flex flex-wrap items-center gap-4">
+          <div className="w-64 max-w-full">
+            <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+              Select Hall
+            </label>
             <Select
               value={selectedHall.id}
               onValueChange={(val) => {
@@ -83,34 +89,36 @@ export function HallDetails({
         {/* 2x2 Grid */}
         <div className="grid lg:grid-cols-2 gap-6">
           {/* Card 1: Hall Images */}
-          <Card className="bg-white/70 backdrop-blur-md border-white/60 shadow-sm rounded-xl p-5 flex flex-col">
-            <div className="flex items-center gap-2 mb-4 text-[#1e3a8a]">
-              <ImageIcon className="h-5 w-5" />
-              <h3 className="font-bold text-lg">Hall Images</h3>
-            </div>
+          <Card className="bg-white/70 backdrop-blur-md border-white/60 shadow-sm rounded-xl p-5 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center gap-2 mb-4 text-[#1e3a8a]">
+                <ImageIcon className="h-5 w-5" />
+                <h3 className="font-bold text-lg">Hall Images</h3>
+              </div>
 
-            <div className="relative aspect-[16/9] bg-slate-100 rounded-lg overflow-hidden border border-slate-200 mb-3 group">
-              <img
-                src={selectedHall.images?.[idx] || selectedHall.image}
-                alt={selectedHall.name}
-                className="h-full w-full object-cover transition-opacity duration-300"
-              />
-              <button
-                onClick={() =>
-                  setIdx(
-                    (idx - 1 + (selectedHall.images?.length || 1)) % (selectedHall.images?.length || 1)
-                  )
-                }
-                className="absolute left-2 top-1/2 -translate-y-1/2 grid place-items-center h-10 w-10 rounded-full bg-white/90 shadow text-slate-700 hover:bg-white opacity-0 group-hover:opacity-100 transition-opacity"
-              >
-                <ChevronLeft className="h-6 w-6" />
-              </button>
-              <button
-                onClick={() => setIdx((idx + 1) % (selectedHall.images?.length || 1))}
-                className="absolute right-2 top-1/2 -translate-y-1/2 grid place-items-center h-10 w-10 rounded-full bg-white/90 shadow text-slate-700 hover:bg-white opacity-0 group-hover:opacity-100 transition-opacity"
-              >
-                <ChevronRight className="h-6 w-6" />
-              </button>
+              <div className="relative aspect-[16/9] bg-slate-100 rounded-lg overflow-hidden border border-slate-200 mb-3 group">
+                <img
+                  src={selectedHall.images?.[idx] || selectedHall.image}
+                  alt={selectedHall.name}
+                  className="h-full w-full object-cover transition-opacity duration-300"
+                />
+                <button
+                  onClick={() =>
+                    setIdx(
+                      (idx - 1 + (selectedHall.images?.length || 1)) % (selectedHall.images?.length || 1)
+                    )
+                  }
+                  className="absolute left-2 top-1/2 -translate-y-1/2 grid place-items-center h-10 w-10 rounded-full bg-white/90 shadow text-slate-700 hover:bg-white opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <ChevronLeft className="h-6 w-6" />
+                </button>
+                <button
+                  onClick={() => setIdx((idx + 1) % (selectedHall.images?.length || 1))}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 grid place-items-center h-10 w-10 rounded-full bg-white/90 shadow text-slate-700 hover:bg-white opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <ChevronRight className="h-6 w-6" />
+                </button>
+              </div>
             </div>
 
             <div className="flex gap-3 overflow-x-auto pb-1 mt-auto">
@@ -169,70 +177,72 @@ export function HallDetails({
           </Card>
 
           {/* Card 3: Hall details */}
-          <Card className="bg-white/70 backdrop-blur-md border-white/60 shadow-sm rounded-xl p-5">
-            <div className="flex items-center gap-2 mb-4 text-[#1e3a8a]">
-              <Building2 className="h-5 w-5" />
-              <h3 className="font-bold text-lg">Hall details</h3>
-            </div>
+          <Card className="bg-white/70 backdrop-blur-md border-white/60 shadow-sm rounded-xl p-5 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center gap-2 mb-4 text-[#1e3a8a]">
+                <Building2 className="h-5 w-5" />
+                <h3 className="font-bold text-lg">Hall details</h3>
+              </div>
 
-            <div className="divide-y divide-slate-200/60 text-[13px]">
-              <div className="flex py-2.5">
-                <div className="w-[140px] flex items-center gap-2 text-slate-600">
-                  <MapPin className="h-4 w-4 text-[#1e3a8a]" />
-                  Zone
+              <div className="divide-y divide-slate-200/60 text-[13px]">
+                <div className="flex py-2.5">
+                  <div className="w-[140px] flex items-center gap-2 text-slate-600">
+                    <MapPin className="h-4 w-4 text-[#1e3a8a]" />
+                    Zone
+                  </div>
+                  <div className="flex-1 font-medium text-slate-800">{selectedHall.zone}</div>
                 </div>
-                <div className="flex-1 font-medium text-slate-800">{selectedHall.zone}</div>
-              </div>
-              <div className="flex py-2.5">
-                <div className="w-[140px] flex items-center gap-2 text-slate-600">
-                  <Map className="h-4 w-4 text-blue-500" />
-                  Division
+                <div className="flex py-2.5">
+                  <div className="w-[140px] flex items-center gap-2 text-slate-600">
+                    <Building2 className="h-4 w-4 text-[#1e3a8a]" />
+                    Division
+                  </div>
+                  <div className="flex-1 font-medium text-slate-800">{selectedHall.division}</div>
                 </div>
-                <div className="flex-1 font-medium text-slate-800">{selectedHall.division}</div>
-              </div>
-              <div className="flex py-2.5">
-                <div className="w-[140px] flex items-center gap-2 text-slate-600">
-                  <Navigation className="h-4 w-4 text-blue-500" />
-                  Address
+                <div className="flex py-2.5">
+                  <div className="w-[140px] flex items-center gap-2 text-slate-600">
+                    <MapPin className="h-4 w-4 text-blue-500" />
+                    Address
+                  </div>
+                  <div className="flex-1 font-medium text-slate-800 text-[12px]">{selectedHall.address}</div>
                 </div>
-                <div className="flex-1 font-medium text-slate-800">{selectedHall.address}</div>
-              </div>
-              <div className="flex py-2.5">
-                <div className="w-[140px] flex items-center gap-2 text-slate-600">
-                  <MapPin className="h-4 w-4 text-blue-500" />
-                  Landmark
+                <div className="flex py-2.5">
+                  <div className="w-[140px] flex items-center gap-2 text-slate-600">
+                    <MapPin className="h-4 w-4 text-blue-500" />
+                    Landmark
+                  </div>
+                  <div className="flex-1 font-medium text-slate-800">{selectedHall.landmark}</div>
                 </div>
-                <div className="flex-1 font-medium text-slate-800">{selectedHall.landmark}</div>
-              </div>
-              <div className="flex py-2.5">
-                <div className="w-[140px] flex items-center gap-2 text-slate-600">
-                  <Maximize className="h-4 w-4 text-blue-500" />
-                  Total Area
+                <div className="flex py-2.5">
+                  <div className="w-[140px] flex items-center gap-2 text-slate-600">
+                    <Maximize className="h-4 w-4 text-blue-500" />
+                    Total Area
+                  </div>
+                  <div className="flex-1 font-medium text-slate-800">{selectedHall.totalArea}</div>
                 </div>
-                <div className="flex-1 font-medium text-slate-800">{selectedHall.totalArea}</div>
-              </div>
-              <div className="flex py-2.5">
-                <div className="w-[140px] flex items-center gap-2 text-slate-600">
-                  <Users className="h-4 w-4 text-blue-500" />
-                  Seating capacity
+                <div className="flex py-2.5">
+                  <div className="w-[140px] flex items-center gap-2 text-slate-600">
+                    <Users className="h-4 w-4 text-blue-500" />
+                    Seating capacity
+                  </div>
+                  <div className="flex-1 font-medium text-slate-800">{selectedHall.capacity}</div>
                 </div>
-                <div className="flex-1 font-medium text-slate-800">{selectedHall.capacity}</div>
-              </div>
-              <div className="flex py-2.5">
-                <div className="w-[140px] flex items-center gap-2 text-slate-600">
-                  <Car className="h-4 w-4 text-blue-500" />
-                  Parking capacity
-                </div>
-                <div className="flex-1 font-medium text-slate-800">
-                  {selectedHall.parkingCapacity}
+                <div className="flex py-2.5">
+                  <div className="w-[140px] flex items-center gap-2 text-slate-600">
+                    <Car className="h-4 w-4 text-blue-500" />
+                    Parking capacity
+                  </div>
+                  <div className="flex-1 font-medium text-slate-800">
+                    {selectedHall.parkingCapacity}
+                  </div>
                 </div>
               </div>
             </div>
           </Card>
 
-          {/* Card 4: Amount Details & Action Button */}
-          <div className="flex flex-col gap-4">
-            <Card className="bg-white/70 backdrop-blur-md border-white/60 shadow-sm rounded-xl p-5 flex-1">
+          {/* Card 4: Amount Details */}
+          <Card className="bg-white/70 backdrop-blur-md border-white/60 shadow-sm rounded-xl p-5 flex flex-col justify-between">
+            <div>
               <div className="flex items-center gap-2 mb-4 text-[#1e3a8a]">
                 <div className="h-6 w-6 rounded-full bg-blue-100 flex items-center justify-center">
                   <IndianRupee className="h-3 w-3" />
@@ -274,18 +284,18 @@ export function HallDetails({
                   <div className="font-medium text-slate-800">{selectedHall.caretakerNumber}</div>
                 </div>
               </div>
-            </Card>
+            </div>
 
-            <div className="flex justify-end">
+            <div className="flex justify-end mt-6">
               <Button
                 onClick={onCalculate}
-                className="bg-[#0f172a] hover:bg-[#1e293b] text-white px-8 py-6 rounded-lg text-[15px] font-bold shadow-lg"
+                className="bg-[#0f172a] hover:bg-[#1e293b] text-white px-8 py-6 rounded-lg text-[15px] font-bold shadow-lg w-full sm:w-auto"
               >
                 <Calculator className="h-5 w-5 mr-2" />
                 Calculate Hall Rent
               </Button>
             </div>
-          </div>
+          </Card>
         </div>
       </div>
     </div>
