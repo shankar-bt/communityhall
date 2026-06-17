@@ -7,6 +7,11 @@ import {
   Calculator,
   ChevronRight,
   ChevronLeft,
+  LayoutDashboard,
+  CalendarCheck,
+  History,
+  Clock,
+  IndianRupee,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -16,52 +21,99 @@ interface SidebarProps {
 }
 
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
-  const { booking, halls } = useApp();
+  const { booking, halls, user } = useApp();
   const location = useLocation();
   const router = useRouter();
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   const hallId = booking.hall?.id || halls[0]?.id || "1";
   const pathname = location.pathname;
+  const isOfficial = user?.role === "official";
 
   // Navigation Items
-  const navItems = [
-    {
-      id: "hall-booking",
-      label: "Hall Booking",
-      path: `/halls/${hallId}`,
-      icon: Building2,
-      isActive: (path: string) =>
-        path.startsWith("/halls/") &&
-        !path.endsWith("/calculator") &&
-        !path.endsWith("/book"),
-    },
-    {
-      id: "booking-details",
-      label: "Booking Details",
-      path: `/halls/${hallId}/book`,
-      icon: ClipboardList,
-      isActive: (path: string) => path.endsWith("/book"),
-    },
-    {
-      id: "halls-list",
-      label: "Community Hall List",
-      path: "/",
-      icon: MapPin,
-      isActive: (path: string) => path === "/",
-    },
-    {
-      id: "calculate-rent",
-      label: "Calculate Rent Amount",
-      path: `/halls/${hallId}/calculator`,
-      icon: Calculator,
-      isActive: (path: string) => path.endsWith("/calculator"),
-    },
-  ];
+  const navItems = isOfficial
+    ? [
+      {
+        id: "official-dashboard",
+        label: "Dashboard",
+        path: "/",
+        search: { view: "dashboard" },
+        icon: LayoutDashboard,
+        isActive: (path: string, search: any) => path === "/" && (!search?.view || search.view === "dashboard"),
+      },
+      {
+        id: "current-events",
+        label: "Current Events",
+        path: "/",
+        search: { view: "current" },
+        icon: CalendarCheck,
+        isActive: (path: string, search: any) => path === "/" && search?.view === "current",
+      },
+      {
+        id: "past-events",
+        label: "Past Events",
+        path: "/",
+        search: { view: "past" },
+        icon: History,
+        isActive: (path: string, search: any) => path === "/" && search?.view === "past",
+      },
+      {
+        id: "future-events",
+        label: "Future Events",
+        path: "/",
+        search: { view: "future" },
+        icon: Clock,
+        isActive: (path: string, search: any) => path === "/" && search?.view === "future",
+      },
+      {
+        id: "settlement-list",
+        label: "Settlement List",
+        path: "/",
+        search: { view: "settlement" },
+        icon: IndianRupee,
+        isActive: (path: string, search: any) => path === "/" && search?.view === "settlement",
+      },
+    ]
+    : [
+      {
+        id: "hall-booking",
+        label: "Hall Booking",
+        path: `/halls/${hallId}`,
+        icon: Building2,
+        isActive: (path: string) =>
+          path.startsWith("/halls/") &&
+          !path.endsWith("/calculator") &&
+          !path.endsWith("/book"),
+      },
+      {
+        id: "booking-details",
+        label: "Booking Details",
+        path: `/halls/${hallId}/book`,
+        icon: ClipboardList,
+        isActive: (path: string) => path.endsWith("/book"),
+      },
+      {
+        id: "halls-list",
+        label: "Community Hall List",
+        path: "/",
+        icon: MapPin,
+        isActive: (path: string) => path === "/",
+      },
+      {
+        id: "calculate-rent",
+        label: "Calculate Rent Amount",
+        path: `/halls/${hallId}/calculator`,
+        icon: Calculator,
+        isActive: (path: string) => path.endsWith("/calculator"),
+      },
+    ];
 
   // Close sidebar on path change (useful on mobile)
   useEffect(() => {
-    onClose();
+    const isMobile = window.matchMedia("(max-width: 767px)").matches;
+    if (isMobile) {
+      onClose();
+    }
   }, [pathname]);
 
   const handleToggle = () => {
@@ -84,15 +136,14 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
       {/* Sidebar Container */}
       <aside
-        className={`fixed md:relative inset-y-0 left-0 z-40 md:z-30 shrink-0 flex flex-col bg-white/30 backdrop-blur-md border-r border-white/20 transition-all duration-300 h-[calc(100vh-68px)] pt-0 ${
-          isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+        className={`fixed md:relative inset-y-0 left-0 z-40 md:z-30 shrink-0 flex flex-col bg-white/30 backdrop-blur-md border-r border-white/20 transition-all duration-300 h-full min-h-[calc(100vh-68px)] pt-0 ${
+          isOpen ? "translate-x-0 md:flex" : "-translate-x-full md:hidden"
         } ${isCollapsed ? "w-80 md:w-20" : "w-80"}`}
       >
         {/* Sidebar Header */}
         <div
-          className={`bg-[#1e3a8a] text-white px-5 py-4 flex items-center shadow-md transition-all duration-300 ${
-            isCollapsed ? "justify-center" : "justify-between"
-          }`}
+          className={`bg-[#1e3a8a] text-white px-5 py-4 flex items-center shadow-md transition-all duration-300 ${isCollapsed ? "justify-center" : "justify-between"
+            }`}
         >
           {!isCollapsed && (
             <div className="flex items-center gap-2.5 animate-in fade-in duration-300 whitespace-nowrap">
@@ -120,50 +171,53 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         {/* Navigation Items List */}
         <nav className="p-4 flex flex-col gap-3.5 overflow-y-auto flex-1">
           {navItems.map((item) => {
-            const active = item.isActive(pathname);
+            const active = item.isActive(pathname, location.search);
             const IconComponent = item.icon;
 
             return (
-              <Link
-                key={item.id}
-                to={item.path}
-                title={isCollapsed ? item.label : undefined}
-                className={`flex items-center rounded-xl transition-all border ${
-                  isCollapsed ? "justify-center p-3" : "justify-between p-3.5"
-                } ${
-                  active
-                    ? "bg-[#e0f2fe] border-blue-200/50 text-[#1e3a8a] font-bold shadow-sm"
-                    : "bg-white/60 hover:bg-white/80 border-white/40 text-slate-700 font-semibold hover:border-slate-100 hover:shadow-sm"
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  {/* Icon Container */}
-                  <div
-                    className={`p-2 rounded-xl flex items-center justify-center transition-colors shrink-0 ${
-                      active
+              <div key={item.id} className="relative flex items-center w-full">
+                {/* Left Active Indicator Bar */}
+                {active && (
+                  <div className="absolute left-0 w-1.5 h-10 bg-[#1e3a8a] rounded-r-md z-10" />
+                )}
+
+                <Link
+                  to={item.path}
+                  search={item.search}
+                  title={isCollapsed ? item.label : undefined}
+                  className={`flex items-center rounded-xl transition-all border w-full ${isCollapsed ? "justify-center p-3" : "justify-between p-3.5"
+                    } ${active
+                      ? "bg-[#e0f2fe] border-blue-200/50 text-[#1e3a8a] font-bold shadow-sm"
+                      : "bg-white/60 hover:bg-white/80 border-white/40 text-slate-700 font-semibold hover:border-slate-100 hover:shadow-sm"
+                    } ${!isCollapsed && active ? "ml-2.5" : ""}`}
+                >
+                  <div className="flex items-center gap-3">
+                    {/* Icon Container */}
+                    <div
+                      className={`p-2 rounded-xl flex items-center justify-center transition-colors shrink-0 ${active
                         ? "bg-[#1e3a8a] text-white shadow-sm"
                         : "bg-[#e0f2fe]/60 text-[#1e3a8a]"
-                    }`}
-                  >
-                    <IconComponent className="h-5 w-5 stroke-[2.2]" />
+                        }`}
+                    >
+                      <IconComponent className="h-5 w-5 stroke-[2.2]" />
+                    </div>
+                    {/* Text Label */}
+                    {!isCollapsed && (
+                      <span className="text-[13px] md:text-[14px] whitespace-nowrap animate-in fade-in duration-300">
+                        {item.label}
+                      </span>
+                    )}
                   </div>
-                  {/* Text Label */}
-                  {!isCollapsed && (
-                    <span className="text-[13px] md:text-[14px] whitespace-nowrap animate-in fade-in duration-300">
-                      {item.label}
-                    </span>
-                  )}
-                </div>
 
-                {/* Right Arrow */}
-                {!isCollapsed && (
-                  <ChevronRight
-                    className={`h-4 w-4 stroke-[2.5] transition-colors shrink-0 ${
-                      active ? "text-[#1e3a8a]" : "text-slate-400"
-                    }`}
-                  />
-                )}
-              </Link>
+                  {/* Right Arrow */}
+                  {!isCollapsed && (
+                    <ChevronRight
+                      className={`h-4 w-4 stroke-[2.5] transition-colors shrink-0 ${active ? "text-[#1e3a8a]" : "text-slate-400"
+                        }`}
+                    />
+                  )}
+                </Link>
+              </div>
             );
           })}
         </nav>

@@ -143,7 +143,14 @@ function RootLayoutContent() {
   const { user, logout } = useAuth();
   const { isInitialized } = useApp();
   const router = useRouter();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+
+  useEffect(() => {
+    const isMobile = window.matchMedia("(max-width: 767px)").matches;
+    if (isMobile) {
+      setSidebarOpen(false);
+    }
+  }, []);
 
   if (!isInitialized) {
     return (
@@ -170,12 +177,12 @@ function RootLayoutContent() {
 
   return (
     <div
-      className="min-h-screen flex flex-col bg-cover bg-fixed bg-center pt-[68px]"
+      className="h-screen flex flex-col bg-cover bg-fixed bg-center pt-[68px] overflow-hidden"
       style={{ backgroundImage: "url('/theme.png')" }}
     >
       <TopBar onLogout={handleLogout} onToggleSidebar={() => setSidebarOpen((prev) => !prev)} />
-      
-      <div className="flex-1 flex flex-col md:flex-row relative">
+
+      <div className="flex-1 flex flex-col md:flex-row relative overflow-hidden">
         <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
         <main className="flex-1 bg-white/30 backdrop-blur-sm overflow-y-auto">
           <Outlet />

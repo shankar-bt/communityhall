@@ -32,7 +32,7 @@ export function TopBar({ onLogout, onToggleSidebar }: { onLogout?: () => void; o
           {onToggleSidebar && (
             <button
               onClick={onToggleSidebar}
-              className="md:hidden p-1.5 rounded-lg text-[#1e3a8a] hover:bg-slate-50 transition-colors focus:outline-none"
+              className="p-1.5 rounded-lg text-[#1e3a8a] hover:bg-slate-50 transition-colors focus:outline-none"
               title="Toggle Sidebar"
             >
               <Menu className="h-6 w-6" />

@@ -49,6 +49,7 @@ const translations = {
     mobileNumber: "Mobile Number",
     mobilePlaceholder: "Enter your Mobile Number",
     sendOtp: "Send OTP",
+    officerLogin: "Officer Login",
     loginBtn: "Login",
     fullName: "Full Name",
     fullNamePlaceholder: "Enter your Full Name",
@@ -111,6 +112,7 @@ const translations = {
     mobileNumber: "மொபைல் எண்",
     mobilePlaceholder: "உங்கள் மொபைல் எண்ணை உள்ளிடவும்",
     sendOtp: "OTP அனுப்புக",
+    officerLogin: "அதிகாரி உள்நுழைவு",
     loginBtn: "உள்நுழைக",
     fullName: "முழு பெயர்",
     fullNamePlaceholder: "உங்கள் முழு பெயரை உள்ளிடவும்",
@@ -569,14 +571,23 @@ export function AuthScreen({ onSuccess }: { onSuccess?: (userData?: any) => void
                             )}
                           </div>
 
-                          <div className="field-group">
+                          <div className="field-group" style={{ display: "flex", flexDirection: "row", gap: "0.75rem" }}>
                             <button
                               type="button"
                               onClick={handleSendLoginOtp}
                               className="btn-send-otp"
                               disabled={isLoggingIn}
+                              style={{ flex: 1 }}
                             >
                               {isLoggingIn ? "Sending..." : t.sendOtp}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setActiveTab("official")}
+                              className="btn-send-otp"
+                              style={{ flex: 1 }}
+                            >
+                              {t.officerLogin}
                             </button>
                           </div>
                         </>
