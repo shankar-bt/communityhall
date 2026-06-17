@@ -14,6 +14,8 @@ export interface HallDetailsApi {
   halfDayRent: number;
   depositAmount: number;
   halfDepositAmount: number;
+  latitude?: string;
+  longitude?: string;
   hallImagesList?: { imageUrl?: string; imageContent?: string }[];
 }
 

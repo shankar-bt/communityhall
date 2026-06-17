@@ -9,9 +9,10 @@ import { Calculator } from "@/components/calculator/Calculator";
 import { BookingWizard } from "@/components/booking/BookingWizard";
 import { Lock, ShieldCheck, Globe, Users } from "lucide-react";
 import { z } from "zod";
+import { toast } from "sonner";
 
 const appSearchSchema = z.object({
-  view: z.enum(["list", "details", "calculator", "wizard"]).optional().catch("list"),
+  view: z.enum(["list", "details", "calculator", "wizard", "login"]).optional().catch("list"),
   hallId: z.string().optional(),
 });
 
@@ -67,7 +68,7 @@ function App() {
     );
   }
 
-  if (!user) {
+  if (view === "login") {
     return (
       <AuthScreen
         onSuccess={(userData) => {
@@ -87,6 +88,10 @@ function App() {
     navigate({ search: { view: "details", hallId: h.id } });
   };
   const quickBook = (h: Hall) => {
+    if (!user) {
+      toast.error("login must for booking");
+      return;
+    }
     setBooking((b) => ({ ...b, hall: h, calc: null }));
     navigate({ search: { view: "calculator", hallId: h.id } });
   };
@@ -100,7 +105,7 @@ function App() {
       className="min-h-screen flex flex-col bg-cover bg-fixed bg-center overflow-x-hidden"
       style={{ backgroundImage: "url('/theme.png')" }}
     >
-      <TopBar onLogout={logout} />
+      <TopBar onLogout={logout} onLogin={() => navigate({ search: { view: "login", hallId: undefined } })} />
       <main className="flex-1 bg-white/30 backdrop-blur-sm">
         {view === "list" && <HallList onSelect={selectHall} onBook={quickBook} />}
         {view === "details" && booking.hall && (
@@ -116,7 +121,13 @@ function App() {
         {view === "calculator" && booking.hall && (
           <Calculator
             onBack={() => navigate({ search: { view: "details", hallId: booking.hall?.id } })}
-            onBookNow={() => navigate({ search: { view: "wizard", hallId: booking.hall?.id } })}
+            onBookNow={() => {
+              if (!user) {
+                toast.error("login must for booking");
+                return;
+              }
+              navigate({ search: { view: "wizard", hallId: booking.hall?.id } });
+            }}
           />
         )}
         {view === "wizard" && booking.hall && booking.calc && (

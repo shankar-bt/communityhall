@@ -5,7 +5,7 @@ import { Building2, LogOut } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import LanguageSwitch from "./LanguageSwitch";
 
-export function TopBar({ onLogout }: { onLogout?: () => void }) {
+export function TopBar({ onLogout, onLogin }: { onLogout?: () => void; onLogin?: () => void }) {
   const { t } = useLanguage();
   const { user } = useApp();
   const { fontSize, setFontSize } = useFontSize();
@@ -104,7 +104,14 @@ export function TopBar({ onLogout }: { onLogout?: () => void }) {
                 </div>
               )}
             </div>
-          ) : null}
+          ) : (
+            <button
+              onClick={onLogin}
+              className="px-4 py-1.5 sm:py-2 bg-[#1e3a8a] text-white rounded-lg text-[12px] sm:text-sm font-semibold hover:bg-[#1e3a8a]/90 transition shadow-sm"
+            >
+              Login
+            </button>
+          )}
         </div>
       </div>
     </header>

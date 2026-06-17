@@ -26,6 +26,8 @@ export interface Hall {
   gstPercentage: number;
   ebChargePerUnit: number;
   caretakerNumber: string;
+  latitude?: string;
+  longitude?: string;
 }
 
 export interface UploadedDoc {
@@ -144,7 +146,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
               parkingCapacity: String(d.parkingCapacity || ""),
               gstPercentage: d.gst || 18,
               ebChargePerUnit: d.ebCostPerUnit || 10,
-              caretakerNumber: String(d.hallInchargeMobno || "")
+              caretakerNumber: String(d.hallInchargeMobno || ""),
+              latitude: d.latitude || undefined,
+              longitude: d.longitude || undefined
             };
           });
           setHalls(apiHalls);
