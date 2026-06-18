@@ -109,13 +109,25 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
+import { AppProvider } from "@/contexts/AppContext";
+import { LanguageProvider } from "@/contexts/LanguageContext";
+import { FontSizeProvider } from "@/contexts/FontSizeContext";
+import { Toaster } from "@/components/ui/sonner";
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
+      <LanguageProvider>
+        <FontSizeProvider>
+          <AppProvider>
+            {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+            <Outlet />
+            <Toaster richColors position="top-right" />
+          </AppProvider>
+        </FontSizeProvider>
+      </LanguageProvider>
     </QueryClientProvider>
   );
 }

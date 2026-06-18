@@ -11,12 +11,25 @@ import {
   UserPlus,
 } from "lucide-react";
 import { useState, useEffect } from "react";
+import { verifyOfficialLogin, sendLoginOtp, verifyLoginOtp, registerCitizen, checkMobileExists } from "@/lib/authApi";
 import "./AuthPage.css";
 
 const translations = {
   en: {
-    heroTitle: <>Digital Services for<br />Every Citizen.</>,
-    heroSubtitle: <>One Portal for all Government Services<br />and Citizen Welfare</>,
+    heroTitle: (
+      <>
+        Digital Services for
+        <br />
+        Every Citizen.
+      </>
+    ),
+    heroSubtitle: (
+      <>
+        One Portal for all Government Services
+        <br />
+        and Citizen Welfare
+      </>
+    ),
     secure: "Secure",
     secureSub: "Your data is safe with us",
     accessible: "Accessible",
@@ -27,9 +40,12 @@ const translations = {
     trustedSub: "Official Govt. Platform",
     loginTitle: "Log Into Your Account",
     loginTab: "Login with OTP",
+    officialTab: "Official Login",
     registerTab: "Register",
     username: "Username",
     usernamePlaceholder: "Enter your User Name",
+    password: "Password",
+    passwordPlaceholder: "Enter your Password",
     mobileNumber: "Mobile Number",
     mobilePlaceholder: "Enter your Mobile Number",
     sendOtp: "Send OTP",
@@ -59,11 +75,23 @@ const translations = {
     usernameError: "Username must contain only letters (A-Z, a-z)",
     mobileError: "Mobile number must be exactly 10 digits",
     fullNameError: "Full Name must contain only letters (A-Z, a-z)",
-    requiredError: "This field is required"
+    requiredError: "This field is required",
   },
   ta: {
-    heroTitle: <>ஒவ்வொரு குடிமகனுக்கும்<br />டிஜிட்டல் சேவைகள்.</>,
-    heroSubtitle: <>அனைத்து அரசு சேவைகள் மற்றும்<br />மக்கள் நலனுக்கான ஒரே தளம்</>,
+    heroTitle: (
+      <>
+        ஒவ்வொரு குடிமகனுக்கும்
+        <br />
+        டிஜிட்டல் சேவைகள்.
+      </>
+    ),
+    heroSubtitle: (
+      <>
+        அனைத்து அரசு சேவைகள் மற்றும்
+        <br />
+        மக்கள் நலனுக்கான ஒரே தளம்
+      </>
+    ),
     secure: "பாதுகாப்பானது",
     secureSub: "உங்கள் தரவு பாதுகாப்பாக உள்ளது",
     accessible: "அணுகக்கூடியது",
@@ -74,9 +102,12 @@ const translations = {
     trustedSub: "அதிகாரப்பூர்வ அரசு தளம்",
     loginTitle: "உங்கள் கணக்கில் உள்நுழைக",
     loginTab: "OTP மூலம் உள்நுழைக",
+    officialTab: "அதிகாரப்பூர்வ உள்நுழைவு",
     registerTab: "பதிவு செய்க",
     username: "பயனர் பெயர்",
     usernamePlaceholder: "உங்கள் பயனர் பெயரை உள்ளிடவும்",
+    password: "கடவுச்சொல்",
+    passwordPlaceholder: "உங்கள் கடவுச்சொல்லை உள்ளிடவும்",
     mobileNumber: "மொபைல் எண்",
     mobilePlaceholder: "உங்கள் மொபைல் எண்ணை உள்ளிடவும்",
     sendOtp: "OTP அனுப்புக",
@@ -106,31 +137,49 @@ const translations = {
     usernameError: "பயனர் பெயர் எழுத்துக்களை (A-Z, a-z) மட்டுமே கொண்டிருக்க வேண்டும்",
     mobileError: "கைபேசி எண் சரியாக 10 இலக்கங்களாக இருக்க வேண்டும்",
     fullNameError: "முழு பெயர் எழுத்துக்களை (A-Z, a-z) மட்டுமே கொண்டிருக்க வேண்டும்",
-    requiredError: "இப்புலம் தேவையானது"
-  }
+    requiredError: "இப்புலம் தேவையானது",
+  },
 } as const;
 
 type Lang = keyof typeof translations;
 
-export function AuthScreen({ onSuccess }: { onSuccess?: () => void }) {
-  const [activeTab, setActiveTab] = useState<"login" | "register">("login");
+export function AuthScreen({ onSuccess }: { onSuccess?: (userData?: any) => void }) {
+  const [activeTab, setActiveTab] = useState<"login" | "register" | "official">("login");
   const [fontSize, setFontSize] = useState(16);
   const [lang, setLang] = useState<Lang>("en");
   const [otpSent, setOtpSent] = useState(false);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   // Form State
   const [loginUsername, setLoginUsername] = useState("");
   const [loginMobile, setLoginMobile] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [loginOtp, setLoginOtp] = useState("");
   const [registerFullName, setRegisterFullName] = useState("");
   const [registerMobile, setRegisterMobile] = useState("");
   const [registerEmail, setRegisterEmail] = useState("");
+  const [registerAadhar, setRegisterAadhar] = useState("");
+  const [registerDoorNo, setRegisterDoorNo] = useState("");
+  const [registerStreet, setRegisterStreet] = useState("");
+  const [registerArea, setRegisterArea] = useState("");
+  const [registerLocation, setRegisterLocation] = useState("");
+  const [registerPincode, setRegisterPincode] = useState("");
+  const [registerOtp, setRegisterOtp] = useState("");
+  const [registerStep, setRegisterStep] = useState(1);
 
   // Error State
   const [errors, setErrors] = useState<{
     username?: string;
+    password?: string;
     loginMobile?: string;
     fullName?: string;
     registerMobile?: string;
+    registerAadhar?: string;
+    registerDoorNo?: string;
+    registerStreet?: string;
+    registerArea?: string;
+    registerLocation?: string;
+    registerPincode?: string;
   }>({});
 
   // Reset OTP & input states when changing tabs
@@ -139,9 +188,18 @@ export function AuthScreen({ onSuccess }: { onSuccess?: () => void }) {
     setErrors({});
     setLoginUsername("");
     setLoginMobile("");
+    setLoginPassword("");
     setRegisterFullName("");
     setRegisterMobile("");
     setRegisterEmail("");
+    setRegisterAadhar("");
+    setRegisterDoorNo("");
+    setRegisterStreet("");
+    setRegisterArea("");
+    setRegisterLocation("");
+    setRegisterPincode("");
+    setRegisterOtp("");
+    setRegisterStep(1);
   }, [activeTab]);
 
   const t = translations[lang];
@@ -207,7 +265,9 @@ export function AuthScreen({ onSuccess }: { onSuccess?: () => void }) {
             className="auth-hero-content"
           >
             <h1 className="auth-hero-title">
-              <span className="quote-mark">&ldquo;</span>{t.heroTitle}<span className="quote-mark">&rdquo;</span>
+              <span className="quote-mark">&ldquo;</span>
+              {t.heroTitle}
+              <span className="quote-mark">&rdquo;</span>
             </h1>
 
             {/* Tri-color accent bar */}
@@ -256,9 +316,7 @@ export function AuthScreen({ onSuccess }: { onSuccess?: () => void }) {
                   },
                 ].map((item, i) => (
                   <div key={i} className="auth-glass-item">
-                    <div className={`auth-glass-icon ${item.colorClass}`}>
-                      {item.icon}
-                    </div>
+                    <div className={`auth-glass-icon ${item.colorClass}`}>{item.icon}</div>
                     <p className="auth-glass-label">{item.label}</p>
                     <p className="auth-glass-sub">{item.sub}</p>
                   </div>
@@ -276,17 +334,16 @@ export function AuthScreen({ onSuccess }: { onSuccess?: () => void }) {
               <button onClick={() => changeFontSize(-2)} className="font-btn">
                 A-
               </button>
-              <button onClick={() => setFontSize(16)} className="font-btn font-btn-mid">A</button>
+              <button onClick={() => setFontSize(16)} className="font-btn font-btn-mid">
+                A
+              </button>
               <button onClick={() => changeFontSize(2)} className="font-btn">
                 A+
               </button>
             </div>
 
             <div className="lang-dropdown-wrapper">
-              <button 
-                className="lang-btn" 
-                onClick={() => setLang(lang === "en" ? "ta" : "en")}
-              >
+              <button className="lang-btn" onClick={() => setLang(lang === "en" ? "ta" : "en")}>
                 <Globe size={14} />
                 {lang === "en" ? "தமிழ்" : "English"}
               </button>
@@ -313,6 +370,13 @@ export function AuthScreen({ onSuccess }: { onSuccess?: () => void }) {
                   {t.loginTab}
                 </button>
                 <button
+                  onClick={() => setActiveTab("official")}
+                  className={`auth-tab ${activeTab === "official" ? "active" : ""}`}
+                >
+                  <ShieldCheck size={15} />
+                  {t.officialTab}
+                </button>
+                <button
                   onClick={() => setActiveTab("register")}
                   className={`auth-tab ${activeTab === "register" ? "active" : ""}`}
                 >
@@ -337,7 +401,9 @@ export function AuthScreen({ onSuccess }: { onSuccess?: () => void }) {
                         <>
                           <div className="field-group">
                             <label className="field-label">{t.username}</label>
-                            <div className={`field-input-wrapper ${errors.username ? 'has-error' : ''}`}>
+                            <div
+                              className={`field-input-wrapper ${errors.username ? "has-error" : ""}`}
+                            >
                               <User size={18} className="field-icon" />
                               <input
                                 type="text"
@@ -354,12 +420,16 @@ export function AuthScreen({ onSuccess }: { onSuccess?: () => void }) {
                                 }}
                               />
                             </div>
-                            {errors.username && <span className="field-error-msg">{errors.username}</span>}
+                            {errors.username && (
+                              <span className="field-error-msg">{errors.username}</span>
+                            )}
                           </div>
 
                           <div className="field-group">
                             <label className="field-label">{t.mobileNumber}</label>
-                            <div className={`field-input-wrapper ${errors.loginMobile ? 'has-error' : ''}`}>
+                            <div
+                              className={`field-input-wrapper ${errors.loginMobile ? "has-error" : ""}`}
+                            >
                               <Phone size={18} className="field-icon" />
                               <input
                                 type="tel"
@@ -376,13 +446,15 @@ export function AuthScreen({ onSuccess }: { onSuccess?: () => void }) {
                                 }}
                               />
                             </div>
-                            {errors.loginMobile && <span className="field-error-msg">{errors.loginMobile}</span>}
+                            {errors.loginMobile && (
+                              <span className="field-error-msg">{errors.loginMobile}</span>
+                            )}
                           </div>
 
                           <div className="field-group">
                             <button
                               type="button"
-                              onClick={() => {
+                              onClick={async () => {
                                 const newErrors: typeof errors = {};
                                 if (!loginUsername.trim()) {
                                   newErrors.username = t.requiredError;
@@ -400,30 +472,146 @@ export function AuthScreen({ onSuccess }: { onSuccess?: () => void }) {
                                   setErrors(newErrors);
                                 } else {
                                   setErrors({});
-                                  setOtpSent(true);
+                                  setIsLoggingIn(true);
+                                  try {
+                                    const isRegistered = await checkMobileExists(Number(loginMobile));
+                                    if (!isRegistered) {
+                                      alert(lang === "en" ? "This mobile number is not registered. Please register first." : "இந்த மொபைல் எண் பதிவு செய்யப்படவில்லை. முதலில் பதிவு செய்யவும்.");
+                                      setIsLoggingIn(false);
+                                      return;
+                                    }
+                                    await sendLoginOtp(Number(loginMobile));
+                                    setOtpSent(true);
+                                  } catch (err: any) {
+                                    alert(err.message || "Failed to send OTP");
+                                  } finally {
+                                    setIsLoggingIn(false);
+                                  }
                                 }
                               }}
                               className="btn-send-otp"
+                              disabled={isLoggingIn}
                             >
-                              {t.sendOtp}
+                              {isLoggingIn ? "Sending..." : t.sendOtp}
                             </button>
                           </div>
                         </>
                       ) : (
-                        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="auth-fields">
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          className="auth-fields"
+                        >
                           <div className="field-group">
                             <label className="field-label">{t.enterOtp}</label>
                             <div className="field-input-wrapper">
                               <ShieldCheck size={18} className="field-icon" />
-                              <input type="text" maxLength={6} placeholder={t.enterOtpPlaceholder} className="field-input otp-input" />
+                              <input
+                                type="text"
+                                maxLength={6}
+                                placeholder={t.enterOtpPlaceholder}
+                                className="field-input otp-input"
+                                value={loginOtp}
+                                onChange={(e) => setLoginOtp(e.target.value.trim())}
+                              />
                             </div>
                             <div style={{ textAlign: "right", marginTop: "0.5rem" }}>
-                              <button type="button" className="resend-otp-btn">{t.resendOtp}</button>
+                              <button type="button" className="resend-otp-btn">
+                                {t.resendOtp}
+                              </button>
                             </div>
                           </div>
-                          <button type="button" onClick={() => onSuccess?.()} className="btn-login">{t.verifyLoginBtn}</button>
+                          <button type="button" disabled={isLoggingIn} onClick={async () => {
+                            if (!loginOtp) return alert("Enter OTP");
+                            setIsLoggingIn(true);
+                            try {
+                              await verifyLoginOtp(Number(loginMobile), loginOtp);
+                              onSuccess?.({ name: loginUsername, contact: loginMobile, role: "citizen" });
+                            } catch (err: any) {
+                              alert(err.message || "Invalid OTP");
+                            } finally {
+                              setIsLoggingIn(false);
+                            }
+                          }} className="btn-login">
+                            {isLoggingIn ? "Verifying..." : t.verifyLoginBtn}
+                          </button>
                         </motion.div>
                       )}
+                    </motion.div>
+                  ) : activeTab === "official" ? (
+                    <motion.div
+                      key="official"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.2 }}
+                      className="auth-fields"
+                    >
+                      <div className="field-group">
+                        <label className="field-label">{t.username}</label>
+                        <div className={`field-input-wrapper ${errors.username ? "has-error" : ""}`}>
+                          <User size={18} className="field-icon" />
+                          <input
+                            type="text"
+                            placeholder={t.usernamePlaceholder}
+                            className="field-input"
+                            value={loginUsername}
+                            onChange={(e) => {
+                              setLoginUsername(e.target.value);
+                              if (errors.username) setErrors((prev) => ({ ...prev, username: undefined }));
+                            }}
+                          />
+                        </div>
+                        {errors.username && <span className="field-error-msg">{errors.username}</span>}
+                      </div>
+
+                      <div className="field-group">
+                        <label className="field-label">{t.password}</label>
+                        <div className={`field-input-wrapper ${errors.password ? "has-error" : ""}`}>
+                          <ShieldCheck size={18} className="field-icon" />
+                          <input
+                            type="password"
+                            placeholder={t.passwordPlaceholder}
+                            className="field-input"
+                            value={loginPassword}
+                            onChange={(e) => {
+                              setLoginPassword(e.target.value);
+                              if (errors.password) setErrors((prev) => ({ ...prev, password: undefined }));
+                            }}
+                          />
+                        </div>
+                        {errors.password && <span className="field-error-msg">{errors.password}</span>}
+                      </div>
+
+                      <button
+                        type="button"
+                        disabled={isLoggingIn}
+                        onClick={async () => {
+                          if (!loginUsername || !loginPassword) {
+                            setErrors((prev) => ({
+                              ...prev,
+                              username: !loginUsername ? t.requiredError : undefined,
+                              password: !loginPassword ? t.requiredError : undefined,
+                            }));
+                            return;
+                          }
+                          setIsLoggingIn(true);
+                          try {
+                            const res = await verifyOfficialLogin(loginUsername, loginPassword);
+                            if (res) {
+                              onSuccess?.({ name: loginUsername, role: res.userType || "official" });
+                            }
+                          } catch (err: any) {
+                            alert(err.message || "Invalid credentials");
+                          } finally {
+                            setIsLoggingIn(false);
+                          }
+                        }}
+                        className="btn-send-otp"
+                        style={{ marginTop: "1rem" }}
+                      >
+                        {isLoggingIn ? "Logging in..." : "Login"}
+                      </button>
                     </motion.div>
                   ) : (
                     <motion.div
@@ -436,9 +624,13 @@ export function AuthScreen({ onSuccess }: { onSuccess?: () => void }) {
                     >
                       {!otpSent ? (
                         <>
-                          <div className="field-group">
-                            <label className="field-label">{t.fullName}</label>
-                            <div className={`field-input-wrapper ${errors.fullName ? 'has-error' : ''}`}>
+                          {registerStep === 1 && (
+                            <>
+                              <div className="field-group">
+                                <label className="field-label">{t.fullName}</label>
+                            <div
+                              className={`field-input-wrapper ${errors.fullName ? "has-error" : ""}`}
+                            >
                               <User size={18} className="field-icon" />
                               <input
                                 type="text"
@@ -455,12 +647,16 @@ export function AuthScreen({ onSuccess }: { onSuccess?: () => void }) {
                                 }}
                               />
                             </div>
-                            {errors.fullName && <span className="field-error-msg">{errors.fullName}</span>}
+                            {errors.fullName && (
+                              <span className="field-error-msg">{errors.fullName}</span>
+                            )}
                           </div>
 
                           <div className="field-group">
                             <label className="field-label">{t.mobileNumber}</label>
-                            <div className={`field-input-wrapper ${errors.registerMobile ? 'has-error' : ''}`}>
+                            <div
+                              className={`field-input-wrapper ${errors.registerMobile ? "has-error" : ""}`}
+                            >
                               <Phone size={18} className="field-icon" />
                               <input
                                 type="tel"
@@ -477,7 +673,9 @@ export function AuthScreen({ onSuccess }: { onSuccess?: () => void }) {
                                 }}
                               />
                             </div>
-                            {errors.registerMobile && <span className="field-error-msg">{errors.registerMobile}</span>}
+                            {errors.registerMobile && (
+                              <span className="field-error-msg">{errors.registerMobile}</span>
+                            )}
                           </div>
 
                           <div className="field-group">
@@ -495,27 +693,191 @@ export function AuthScreen({ onSuccess }: { onSuccess?: () => void }) {
                           </div>
 
                           <div className="field-group">
+                            <label className="field-label">Aadhar Number</label>
+                            <div className={`field-input-wrapper ${errors.registerAadhar ? "has-error" : ""}`}>
+                              <UserPlus size={18} className="field-icon" />
+                              <input
+                                type="text"
+                                maxLength={12}
+                                placeholder="Enter 12-digit Aadhar"
+                                className="field-input"
+                                value={registerAadhar}
+                                onChange={(e) => {
+                                  const val = e.target.value.replace(/\D/g, "");
+                                  setRegisterAadhar(val);
+                                  if (errors.registerAadhar) setErrors((prev) => ({ ...prev, registerAadhar: undefined }));
+                                }}
+                              />
+                            </div>
+                            {errors.registerAadhar && (
+                              <span className="field-error-msg">{errors.registerAadhar}</span>
+                            )}
+                          </div>
+
+                          <div className="field-group" style={{ marginTop: "1rem" }}>
                             <button
                               type="button"
                               onClick={() => {
                                 const newErrors: typeof errors = {};
-                                if (!registerFullName.trim()) {
-                                  newErrors.fullName = t.requiredError;
-                                } else if (!/^[a-zA-Z]+$/.test(registerFullName)) {
-                                  newErrors.fullName = t.fullNameError;
-                                }
+                                if (!registerFullName.trim()) newErrors.fullName = t.requiredError;
+                                else if (!/^[a-zA-Z\s]+$/.test(registerFullName)) newErrors.fullName = t.fullNameError;
 
-                                if (!registerMobile.trim()) {
-                                  newErrors.registerMobile = t.requiredError;
-                                } else if (registerMobile.length !== 10) {
-                                  newErrors.registerMobile = t.mobileError;
+                                if (!registerMobile.trim()) newErrors.registerMobile = t.requiredError;
+                                else if (registerMobile.length !== 10) newErrors.registerMobile = t.mobileError;
+
+                                if (!registerAadhar.trim() || registerAadhar.length !== 12) newErrors.registerAadhar = "Valid 12-digit Aadhar required";
+
+                                if (Object.keys(newErrors).length > 0) {
+                                  setErrors(newErrors);
+                                } else {
+                                  setErrors({});
+                                  setRegisterStep(2);
+                                }
+                              }}
+                              className="btn-send-otp"
+                            >
+                              Next
+                            </button>
+                          </div>
+                          </>
+                        )}
+
+                        {registerStep === 2 && (
+                          <>
+                            <div className="field-group flex gap-2" style={{ marginBottom: "0.5rem" }}>
+                              <button
+                                type="button"
+                                onClick={() => setRegisterStep(1)}
+                                className="btn-send-otp"
+                                style={{ backgroundColor: "#64748b", flex: 1 }}
+                              >
+                                Back
+                              </button>
+                            </div>
+
+                            <div className="field-group">
+                              <label className="field-label">Door No</label>
+                            <div className={`field-input-wrapper ${errors.registerDoorNo ? "has-error" : ""}`}>
+                              <input
+                                type="text"
+                                placeholder="Enter Door No"
+                                className="field-input"
+                                value={registerDoorNo}
+                                onChange={(e) => {
+                                  setRegisterDoorNo(e.target.value);
+                                  if (errors.registerDoorNo) setErrors((prev) => ({ ...prev, registerDoorNo: undefined }));
+                                }}
+                              />
+                            </div>
+                            {errors.registerDoorNo && (
+                              <span className="field-error-msg">{errors.registerDoorNo}</span>
+                            )}
+                          </div>
+
+                          <div className="field-group">
+                            <label className="field-label">Street</label>
+                            <div className={`field-input-wrapper ${errors.registerStreet ? "has-error" : ""}`}>
+                              <input
+                                type="text"
+                                placeholder="Enter Street"
+                                className="field-input"
+                                value={registerStreet}
+                                onChange={(e) => {
+                                  setRegisterStreet(e.target.value);
+                                  if (errors.registerStreet) setErrors((prev) => ({ ...prev, registerStreet: undefined }));
+                                }}
+                              />
+                            </div>
+                            {errors.registerStreet && (
+                              <span className="field-error-msg">{errors.registerStreet}</span>
+                            )}
+                          </div>
+
+                          <div className="field-group">
+                            <label className="field-label">Area</label>
+                            <div className={`field-input-wrapper ${errors.registerArea ? "has-error" : ""}`}>
+                              <input
+                                type="text"
+                                placeholder="Enter Area"
+                                className="field-input"
+                                value={registerArea}
+                                onChange={(e) => {
+                                  setRegisterArea(e.target.value);
+                                  if (errors.registerArea) setErrors((prev) => ({ ...prev, registerArea: undefined }));
+                                }}
+                              />
+                            </div>
+                            {errors.registerArea && (
+                              <span className="field-error-msg">{errors.registerArea}</span>
+                            )}
+                          </div>
+
+                          <div className="field-group">
+                            <label className="field-label">Location</label>
+                            <div className={`field-input-wrapper ${errors.registerLocation ? "has-error" : ""}`}>
+                              <input
+                                type="text"
+                                placeholder="Enter Location"
+                                className="field-input"
+                                value={registerLocation}
+                                onChange={(e) => {
+                                  setRegisterLocation(e.target.value);
+                                  if (errors.registerLocation) setErrors((prev) => ({ ...prev, registerLocation: undefined }));
+                                }}
+                              />
+                            </div>
+                            {errors.registerLocation && (
+                              <span className="field-error-msg">{errors.registerLocation}</span>
+                            )}
+                          </div>
+
+                          <div className="field-group">
+                            <label className="field-label">Pincode</label>
+                            <div className={`field-input-wrapper ${errors.registerPincode ? "has-error" : ""}`}>
+                              <input
+                                type="text"
+                                maxLength={6}
+                                placeholder="Enter 6-digit Pincode"
+                                className="field-input"
+                                value={registerPincode}
+                                onChange={(e) => {
+                                  const val = e.target.value.replace(/\D/g, "");
+                                  setRegisterPincode(val);
+                                  if (errors.registerPincode) setErrors((prev) => ({ ...prev, registerPincode: undefined }));
+                                }}
+                              />
+                            </div>
+                            {errors.registerPincode && (
+                              <span className="field-error-msg">{errors.registerPincode}</span>
+                            )}
+                          </div>
+
+                          <div className="field-group">
+                            <button
+                              type="button"
+                              onClick={async () => {
+                                const newErrors: typeof errors = {};
+                                if (!registerDoorNo.trim()) newErrors.registerDoorNo = t.requiredError;
+                                if (!registerStreet.trim()) newErrors.registerStreet = t.requiredError;
+                                if (!registerArea.trim()) newErrors.registerArea = t.requiredError;
+                                if (!registerLocation.trim()) newErrors.registerLocation = t.requiredError;
+                                if (!registerPincode.trim() || registerPincode.length !== 6) {
+                                  newErrors.registerPincode = "Valid 6-digit Pincode required";
                                 }
 
                                 if (Object.keys(newErrors).length > 0) {
                                   setErrors(newErrors);
                                 } else {
                                   setErrors({});
-                                  setOtpSent(true);
+                                  setIsLoggingIn(true);
+                                  try {
+                                    await sendLoginOtp(Number(registerMobile));
+                                    setOtpSent(true);
+                                  } catch (err: any) {
+                                    alert(err.message || "Failed to send OTP");
+                                  } finally {
+                                    setIsLoggingIn(false);
+                                  }
                                 }
                               }}
                               className="btn-send-otp"
@@ -523,20 +885,72 @@ export function AuthScreen({ onSuccess }: { onSuccess?: () => void }) {
                               {t.sendOtp}
                             </button>
                           </div>
+                          </>
+                        )}
                         </>
                       ) : (
-                        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="auth-fields">
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          className="auth-fields"
+                        >
                           <div className="field-group">
                             <label className="field-label">{t.enterOtp}</label>
                             <div className="field-input-wrapper">
                               <ShieldCheck size={18} className="field-icon" />
-                              <input type="text" maxLength={6} placeholder={t.enterOtpPlaceholder} className="field-input otp-input" />
+                              <input
+                                type="text"
+                                maxLength={6}
+                                placeholder={t.enterOtpPlaceholder}
+                                className="field-input otp-input"
+                                value={registerOtp}
+                                onChange={(e) => setRegisterOtp(e.target.value.trim())}
+                              />
                             </div>
                             <div style={{ textAlign: "right", marginTop: "0.5rem" }}>
-                              <button type="button" className="resend-otp-btn">{t.resendOtp}</button>
+                              <button type="button" className="resend-otp-btn">
+                                {t.resendOtp}
+                              </button>
                             </div>
                           </div>
-                          <button type="button" onClick={() => onSuccess?.()} className="btn-login btn-register">{t.verifyRegisterBtn}</button>
+                          <button
+                            type="button"
+                            disabled={isLoggingIn}
+                            onClick={async () => {
+                              if (!registerOtp) return alert("Enter OTP");
+                              setIsLoggingIn(true);
+                              try {
+                                // 1. Verify OTP
+                                await verifyLoginOtp(Number(registerMobile), registerOtp);
+
+                                // 2. Submit Registration Data
+                                const formData = new FormData();
+                                formData.append("name", registerFullName);
+                                formData.append("mobileNo", registerMobile);
+                                formData.append("email", registerEmail);
+                                formData.append("usertype", "PUBLIC");
+
+                                // Provide form data
+                                formData.append("aadharnumber", registerAadhar);
+                                formData.append("doorNo", registerDoorNo);
+                                formData.append("street", registerStreet);
+                                formData.append("area", registerArea);
+                                formData.append("location", registerLocation);
+                                formData.append("pinCode", registerPincode);
+
+                                await registerCitizen(formData);
+                                alert("Registration Successful!");
+                                onSuccess?.({ name: registerFullName, contact: registerMobile, role: "citizen" });
+                              } catch (err: any) {
+                                alert(err.message || "Invalid OTP or Registration Failed");
+                              } finally {
+                                setIsLoggingIn(false);
+                              }
+                            }}
+                            className="btn-login btn-register"
+                          >
+                            {isLoggingIn ? "Verifying..." : t.verifyRegisterBtn}
+                          </button>
                         </motion.div>
                       )}
                     </motion.div>
