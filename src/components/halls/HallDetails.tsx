@@ -217,7 +217,7 @@ export function HallDetails({
             <div className="divide-y divide-slate-200/60 text-[13px]">
               <div className="flex py-2.5">
                 <div className="w-[140px] flex items-center gap-2 text-slate-600">
-                  <MapPin className="h-4 w-4 text-blue-500" />
+                  <MapPin className="h-4 w-4 text-[#1e3a8a]" />
                   Zone
                 </div>
                 <div className="flex-1 font-medium text-slate-800">{selectedHall.zone}</div>

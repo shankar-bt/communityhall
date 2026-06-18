@@ -7,7 +7,7 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 
@@ -109,10 +109,16 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
-import { AppProvider } from "@/contexts/AppContext";
+import { AppProvider, useApp } from "@/contexts/AppContext";
+import { AuthProvider } from "@/contexts/AuthContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { FontSizeProvider } from "@/contexts/FontSizeContext";
 import { Toaster } from "@/components/ui/sonner";
+import { useAuth } from "@/hooks/useAuth";
+import { AuthScreen } from "@/modules/auth/screens";
+import { TopBar } from "@/components/TopBar";
+import { Sidebar } from "@/components/Sidebar";
+import { Lock, ShieldCheck, Globe, Users } from "lucide-react";
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
@@ -122,12 +128,108 @@ function RootComponent() {
       <LanguageProvider>
         <FontSizeProvider>
           <AppProvider>
-            {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-            <Outlet />
-            <Toaster richColors position="top-right" />
+            <AuthProvider>
+              <RootLayoutContent />
+              <Toaster richColors position="top-right" />
+            </AuthProvider>
           </AppProvider>
         </FontSizeProvider>
       </LanguageProvider>
     </QueryClientProvider>
+  );
+}
+
+function RootLayoutContent() {
+  const { user, logout } = useAuth();
+  const { isInitialized } = useApp();
+  const router = useRouter();
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+
+  useEffect(() => {
+    const isMobile = window.matchMedia("(max-width: 767px)").matches;
+    if (isMobile) {
+      setSidebarOpen(false);
+    }
+  }, []);
+
+  if (!isInitialized) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#1e3a8a]"></div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <AuthScreen
+        onSuccess={() => {
+          router.navigate({ to: "/" });
+        }}
+      />
+    );
+  }
+
+  const handleLogout = () => {
+    logout();
+    router.navigate({ to: "/" });
+  };
+
+  return (
+    <div
+      className="h-screen flex flex-col bg-cover bg-fixed bg-center pt-[68px] overflow-hidden"
+      style={{ backgroundImage: "url('/theme.png')" }}
+    >
+      <TopBar onLogout={handleLogout} onToggleSidebar={() => setSidebarOpen((prev) => !prev)} />
+
+      <div className="flex-1 flex flex-col md:flex-row relative overflow-hidden">
+        <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+        <main className="flex-1 bg-white/30 backdrop-blur-sm overflow-y-auto">
+          <Outlet />
+        </main>
+      </div>
+
+      {/* Dark Footer */}
+      <footer className="bg-[#0f172a] text-white py-10 mt-auto w-full relative z-20">
+        <div className="container mx-auto max-w-7xl px-4 lg:px-8 flex flex-wrap justify-between items-center gap-8">
+          <div className="flex items-center gap-4">
+            <Lock className="h-6 w-6 text-white" strokeWidth={2.5} />
+            <div>
+              <div className="font-bold text-[13px] mb-1 leading-tight">Secure</div>
+              <div className="text-[10px] text-white/60 font-semibold leading-tight">
+                Your data is safe with us
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center gap-4">
+            <ShieldCheck className="h-6 w-6 text-white" strokeWidth={2.5} />
+            <div>
+              <div className="font-bold text-[13px] mb-1 leading-tight">Transparent</div>
+              <div className="text-[10px] text-white/60 font-semibold leading-tight">
+                Transparent Services for everyone
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center gap-4">
+            <Globe className="h-6 w-6 text-white" strokeWidth={2.5} />
+            <div>
+              <div className="font-bold text-[13px] mb-1 leading-tight">Accessible</div>
+              <div className="text-[10px] text-white/60 font-semibold leading-tight">
+                Access services anytime,anywhere
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center gap-4">
+            <Users className="h-6 w-6 text-white" strokeWidth={2.5} />
+            <div>
+              <div className="font-bold text-[13px] mb-1 leading-tight">Citizen First</div>
+              <div className="text-[10px] text-white/60 font-semibold leading-tight">
+                We are here to serve you
+              </div>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </div>
   );
 }

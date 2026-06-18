@@ -10,33 +10,84 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as HallsHallIdRouteImport } from './routes/halls.$hallId'
+import { Route as HallsHallIdIndexRouteImport } from './routes/halls.$hallId.index'
+import { Route as HallsHallIdCalculatorRouteImport } from './routes/halls.$hallId.calculator'
+import { Route as HallsHallIdBookRouteImport } from './routes/halls.$hallId.book'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const HallsHallIdRoute = HallsHallIdRouteImport.update({
+  id: '/halls/$hallId',
+  path: '/halls/$hallId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HallsHallIdIndexRoute = HallsHallIdIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => HallsHallIdRoute,
+} as any)
+const HallsHallIdCalculatorRoute = HallsHallIdCalculatorRouteImport.update({
+  id: '/calculator',
+  path: '/calculator',
+  getParentRoute: () => HallsHallIdRoute,
+} as any)
+const HallsHallIdBookRoute = HallsHallIdBookRouteImport.update({
+  id: '/book',
+  path: '/book',
+  getParentRoute: () => HallsHallIdRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/halls/$hallId': typeof HallsHallIdRouteWithChildren
+  '/halls/$hallId/book': typeof HallsHallIdBookRoute
+  '/halls/$hallId/calculator': typeof HallsHallIdCalculatorRoute
+  '/halls/$hallId/': typeof HallsHallIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/halls/$hallId/book': typeof HallsHallIdBookRoute
+  '/halls/$hallId/calculator': typeof HallsHallIdCalculatorRoute
+  '/halls/$hallId': typeof HallsHallIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/halls/$hallId': typeof HallsHallIdRouteWithChildren
+  '/halls/$hallId/book': typeof HallsHallIdBookRoute
+  '/halls/$hallId/calculator': typeof HallsHallIdCalculatorRoute
+  '/halls/$hallId/': typeof HallsHallIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/halls/$hallId'
+    | '/halls/$hallId/book'
+    | '/halls/$hallId/calculator'
+    | '/halls/$hallId/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/halls/$hallId/book'
+    | '/halls/$hallId/calculator'
+    | '/halls/$hallId'
+  id:
+    | '__root__'
+    | '/'
+    | '/halls/$hallId'
+    | '/halls/$hallId/book'
+    | '/halls/$hallId/calculator'
+    | '/halls/$hallId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  HallsHallIdRoute: typeof HallsHallIdRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +99,56 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/halls/$hallId': {
+      id: '/halls/$hallId'
+      path: '/halls/$hallId'
+      fullPath: '/halls/$hallId'
+      preLoaderRoute: typeof HallsHallIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/halls/$hallId/': {
+      id: '/halls/$hallId/'
+      path: '/'
+      fullPath: '/halls/$hallId/'
+      preLoaderRoute: typeof HallsHallIdIndexRouteImport
+      parentRoute: typeof HallsHallIdRoute
+    }
+    '/halls/$hallId/calculator': {
+      id: '/halls/$hallId/calculator'
+      path: '/calculator'
+      fullPath: '/halls/$hallId/calculator'
+      preLoaderRoute: typeof HallsHallIdCalculatorRouteImport
+      parentRoute: typeof HallsHallIdRoute
+    }
+    '/halls/$hallId/book': {
+      id: '/halls/$hallId/book'
+      path: '/book'
+      fullPath: '/halls/$hallId/book'
+      preLoaderRoute: typeof HallsHallIdBookRouteImport
+      parentRoute: typeof HallsHallIdRoute
+    }
   }
 }
 
+interface HallsHallIdRouteChildren {
+  HallsHallIdBookRoute: typeof HallsHallIdBookRoute
+  HallsHallIdCalculatorRoute: typeof HallsHallIdCalculatorRoute
+  HallsHallIdIndexRoute: typeof HallsHallIdIndexRoute
+}
+
+const HallsHallIdRouteChildren: HallsHallIdRouteChildren = {
+  HallsHallIdBookRoute: HallsHallIdBookRoute,
+  HallsHallIdCalculatorRoute: HallsHallIdCalculatorRoute,
+  HallsHallIdIndexRoute: HallsHallIdIndexRoute,
+}
+
+const HallsHallIdRouteWithChildren = HallsHallIdRoute._addFileChildren(
+  HallsHallIdRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  HallsHallIdRoute: HallsHallIdRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
