@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Star, MapPin, Search, Calendar, Heart, Lock, Eye, Building } from "lucide-react";
-import { HallMapModal } from "./HallMapModal";
+import { HallMapModal } from "@/components/halls/HallMapModal";
 
 const getTodayString = () => {
   const today = new Date();
