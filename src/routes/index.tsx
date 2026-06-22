@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useApp, type Hall } from "@/contexts/AppContext";
 import { HallList } from "@/modules/halls/screens";
 import { OfficialHome } from "@/modules/auth/screens";
+import { toast } from "sonner";
 
 type SearchParams = {
   view?: "dashboard" | "current" | "past" | "future" | "settlement";
@@ -47,9 +48,14 @@ function App() {
   };
 
   const quickBook = (h: Hall) => {
+    if (!user) {
+      toast.error("login must for booking");
+      return;
+    }
     setBooking((b) => ({ ...b, hall: h, calc: null }));
     navigate({ to: `/halls/${h.id}/calculator` });
   };
 
   return <HallList onSelect={selectHall} onBook={quickBook} />;
 }
+

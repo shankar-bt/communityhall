@@ -57,6 +57,12 @@ const getTodayString = () => {
   return `${yyyy}-${mm}-${dd}`;
 };
 
+const getMaxDateString = () => {
+  const d = new Date();
+  d.setMonth(d.getMonth() + 6);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+};
+
 export function BookingWizard({ onExit }: { onExit: () => void }) {
   const { t, user, booking, setBooking } = useApp();
   const [step, setStep] = useState(1);
@@ -274,6 +280,7 @@ export function BookingWizard({ onExit }: { onExit: () => void }) {
                     type="date"
                     value={from}
                     min={todayStr}
+                    max={getMaxDateString()}
                     onChange={(e) => {
                       const val = e.target.value;
                       setFrom(val);
@@ -296,6 +303,7 @@ export function BookingWizard({ onExit }: { onExit: () => void }) {
                     type="date"
                     value={to}
                     min={from || todayStr}
+                    max={getMaxDateString()}
                     onChange={(e) => setTo(e.target.value)}
                     className="bg-white py-6 border-slate-200 pr-10 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-3 [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:w-6 [&::-webkit-calendar-picker-indicator]:h-6 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
                   />

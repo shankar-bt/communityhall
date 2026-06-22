@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { fetchApi } from "@/lib/apiClient";
 import { useApp, type Hall } from "@/contexts/AppContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Card } from "@/components/ui/card";
@@ -32,17 +33,44 @@ export function HallDetails({
   hall,
   onBack,
   onCalculate,
+  onSelectHall,
 }: {
   hall: Hall;
   onBack: () => void;
   onCalculate: () => void;
+  onSelectHall: (h: Hall) => void;
 }) {
   const { t } = useLanguage();
-  const { halls, setBooking } = useApp();
+  const { halls } = useApp();
   const [idx, setIdx] = useState(0);
   const [date, setDate] = useState<Date | undefined>(new Date());
+  const [pastData, setPastData] = useState<any[]>([]);
 
   const selectedHall = hall;
+
+  useEffect(() => {
+    fetchApi<any[]>(`communityhall/user/api/getPastData?hall_id=${selectedHall.id}`)
+      .then(setPastData)
+      .catch(console.error);
+  }, [selectedHall.id]);
+
+  const getDateStatus = (d: Date) => {
+    // Format local date to YYYY-MM-DD
+    const dateStr = [
+      d.getFullYear(),
+      String(d.getMonth() + 1).padStart(2, "0"),
+      String(d.getDate()).padStart(2, "0")
+    ].join("-");
+
+    const record = pastData.find(r => r.bdate === dateStr);
+    if (!record) return "available";
+
+    if (record.is_blocked) return "gccBlocked";
+    if (record.morningSlot && record.eveningSlot) return "notAvailable";
+    if (record.morningSlot && !record.eveningSlot) return "eveningAvailable";
+    if (!record.morningSlot && record.eveningSlot) return "morningAvailable";
+    return "available"; // default fallback
+  };
 
   return (
     <div className="min-h-full bg-gradient-to-br from-orange-50/90 via-white/90 to-blue-100/90 pb-20">
@@ -58,7 +86,7 @@ export function HallDetails({
               value={selectedHall.id}
               onValueChange={(val) => {
                 const newHall = halls.find((h) => h.id === val);
-                if (newHall) setBooking((b) => ({ ...b, hall: newHall }));
+                if (newHall) onSelectHall(newHall);
               }}
             >
               <SelectTrigger className="bg-white border-slate-200">
@@ -137,33 +165,44 @@ export function HallDetails({
                 mode="single"
                 selected={date}
                 onSelect={setDate}
-                disabled={{ before: new Date(new Date().setHours(0, 0, 0, 0)) }}
+                disabled={[
+                  { before: new Date(new Date().setHours(0, 0, 0, 0)) },
+                  { after: new Date(new Date().setMonth(new Date().getMonth() + 6)) }
+                ]}
                 modifiers={{
-                  available: (d) => d >= new Date(new Date().setHours(0, 0, 0, 0))
+                  available: (d) => d >= new Date(new Date().setHours(0, 0, 0, 0)) && getDateStatus(d) === "available",
+                  morningAvailable: (d) => getDateStatus(d) === "morningAvailable",
+                  eveningAvailable: (d) => getDateStatus(d) === "eveningAvailable",
+                  notAvailable: (d) => getDateStatus(d) === "notAvailable",
+                  gccBlocked: (d) => getDateStatus(d) === "gccBlocked",
                 }}
                 modifiersClassNames={{
-                  available: "bg-[#22c55e] text-white hover:bg-[#16a34a] hover:text-white"
+                  available: "bg-gradient-to-br from-emerald-400 to-emerald-600 text-white shadow-md shadow-emerald-200 font-bold border-0 hover:from-emerald-500 hover:to-emerald-700 !rounded-full",
+                  morningAvailable: "bg-gradient-to-br from-violet-400 to-violet-600 text-white shadow-md shadow-violet-200 font-bold border-0 hover:from-violet-500 hover:to-violet-700 !rounded-full",
+                  eveningAvailable: "bg-gradient-to-br from-amber-400 to-amber-500 text-white shadow-md shadow-amber-200 font-bold border-0 hover:from-amber-500 hover:to-amber-600 !rounded-full",
+                  notAvailable: "bg-gradient-to-br from-rose-400 to-rose-600 text-white shadow-inner font-bold border-0 opacity-90 hover:from-rose-500 hover:to-rose-700 !rounded-full",
+                  gccBlocked: "bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-md shadow-blue-200 font-bold border-0 hover:from-blue-600 hover:to-indigo-700 !rounded-full"
                 }}
-                className="rounded-md border-0 pointer-events-auto bg-transparent p-0 transform scale-[1.05]"
+                className="rounded-2xl border-0 shadow-lg pointer-events-auto bg-white p-5 mx-auto w-full max-w-sm [&_[data-day]]:rounded-full [&_[data-day]]:transition-all [&_[data-day]:hover]:scale-110 [&_[data-day]:hover]:shadow-md"
               />
             </div>
 
             {/* Legend */}
-            <div className="mt-6 pt-4 border-t border-slate-200/60 flex flex-wrap gap-x-4 gap-y-2 justify-center text-[11px] text-slate-600 font-medium">
-              <div className="flex items-center gap-1.5">
-                <span className="h-3 w-3 rounded-full bg-green-500"></span>Day (Available)
+            <div className="mt-6 pt-4 border-t border-slate-200/60 flex flex-wrap gap-x-4 gap-y-3 justify-center text-[12px] text-slate-700 font-semibold">
+              <div className="flex items-center gap-2 bg-white/50 px-3 py-1.5 rounded-full shadow-sm border border-slate-100">
+                <span className="h-4 w-4 rounded-full bg-gradient-to-br from-green-400 to-green-600 shadow-sm"></span>Day (Available)
               </div>
-              <div className="flex items-center gap-1.5">
-                <span className="h-3 w-3 rounded-full bg-purple-500"></span>Morning (Available)
+              <div className="flex items-center gap-2 bg-white/50 px-3 py-1.5 rounded-full shadow-sm border border-slate-100">
+                <span className="h-4 w-4 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 shadow-sm"></span>Morning (Available)
               </div>
-              <div className="flex items-center gap-1.5">
-                <span className="h-3 w-3 rounded-full bg-yellow-400"></span>Evening (Available)
+              <div className="flex items-center gap-2 bg-white/50 px-3 py-1.5 rounded-full shadow-sm border border-slate-100">
+                <span className="h-4 w-4 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 shadow-sm"></span>Evening (Available)
               </div>
-              <div className="flex items-center gap-1.5">
-                <span className="h-3 w-3 rounded-full bg-red-500"></span>Not Available
+              <div className="flex items-center gap-2 bg-white/50 px-3 py-1.5 rounded-full shadow-sm border border-slate-100">
+                <span className="h-4 w-4 rounded-full bg-gradient-to-br from-red-400 to-red-600 shadow-sm opacity-80"></span>Not Available
               </div>
-              <div className="flex items-center gap-1.5">
-                <span className="h-3 w-3 rounded-full bg-blue-500"></span>GCC Blocked
+              <div className="flex items-center gap-2 bg-white/50 px-3 py-1.5 rounded-full shadow-sm border border-slate-100">
+                <span className="h-4 w-4 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 shadow-sm"></span>GCC Blocked
               </div>
             </div>
           </Card>

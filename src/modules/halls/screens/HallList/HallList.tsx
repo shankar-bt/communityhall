@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { toast } from "sonner";
+import { fetchApi } from "@/lib/apiClient";
 import { useApp, type Hall } from "@/contexts/AppContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Card } from "@/components/ui/card";
@@ -13,6 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Star, MapPin, Search, Calendar, Heart, Lock, Eye, Building } from "lucide-react";
+import { HallMapModal } from "./HallMapModal";
 
 const getTodayString = () => {
   const today = new Date();
@@ -20,6 +23,12 @@ const getTodayString = () => {
   const mm = String(today.getMonth() + 1).padStart(2, "0");
   const dd = String(today.getDate()).padStart(2, "0");
   return `${yyyy}-${mm}-${dd}`;
+};
+
+const getMaxDateString = () => {
+  const d = new Date();
+  d.setMonth(d.getMonth() + 6);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 };
 
 export function HallList({
@@ -32,7 +41,39 @@ export function HallList({
   const { setBooking, halls, loadingHalls } = useApp();
   const { t } = useLanguage();
   const [filters, setFilters] = useState({ from: "", to: "", start: "", end: "" });
+  const [availableHallIds, setAvailableHallIds] = useState<string[] | null>(null);
+  const [isSearching, setIsSearching] = useState(false);
+  const [showMap, setShowMap] = useState(false);
   const todayStr = getTodayString();
+
+  const handleCheckAvailability = async () => {
+    if (!filters.from || !filters.to || !filters.start || !filters.end) {
+      toast.error(t("Please select all filters to check availability"));
+      return;
+    }
+    
+    setIsSearching(true);
+    try {
+      const res = await fetchApi<any[]>(`/communityhall/user/api/checkAvail?fromDate=${filters.from}&toDate=${filters.to}&starting=${filters.start}&ending=${filters.end}`);
+      const ids = res.map((r) => String(r.hallId));
+      setAvailableHallIds(ids);
+      
+      setBooking((b) => ({
+        ...b,
+        fromDate: filters.from,
+        toDate: filters.to,
+        startPeriod: filters.start,
+        endPeriod: filters.end,
+      }));
+    } catch (error) {
+      console.error("Failed to check availability", error);
+      toast.error(t("Failed to check availability"));
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  const displayedHalls = availableHallIds ? halls.filter(h => availableHallIds.includes(String(h.id))) : halls;
 
   return (
     <div className="container mx-auto px-4 py-8 lg:px-8 max-w-7xl animate-in fade-in duration-500">
@@ -56,6 +97,7 @@ export function HallList({
                 className="h-[46px] rounded-xl border-slate-200 shadow-sm w-full pr-10 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-3 [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:w-6 [&::-webkit-calendar-picker-indicator]:h-6 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
                 value={filters.from}
                 min={todayStr}
+                max={getMaxDateString()}
                 onChange={(e) => {
                   const val = e.target.value;
                   setFilters((prev) => {
@@ -79,6 +121,7 @@ export function HallList({
                 className="h-[46px] rounded-xl border-slate-200 shadow-sm w-full pr-10 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-3 [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:w-6 [&::-webkit-calendar-picker-indicator]:h-6 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
                 value={filters.to}
                 min={filters.from || todayStr}
+                max={getMaxDateString()}
                 onChange={(e) => setFilters({ ...filters, to: e.target.value })}
               />
               <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 pointer-events-none" />
@@ -134,7 +177,10 @@ export function HallList({
             </Button>
             <Button
               className="h-[46px] rounded-xl px-5 sm:px-6 bg-red-500 hover:bg-red-600 text-white shadow-sm font-bold shrink-0"
-              onClick={() => setFilters({ from: "", to: "", start: "", end: "" })}
+              onClick={() => {
+                setFilters({ from: "", to: "", start: "", end: "" });
+                setAvailableHallIds(null);
+              }}
             >
               <svg
                 width="16"
@@ -154,26 +200,30 @@ export function HallList({
             </Button>
             <Button
               className="h-[46px] rounded-xl px-6 sm:px-8 bg-[#0f172a] hover:bg-[#1e293b] text-white shadow-sm font-bold flex-1 xl:flex-none"
-              onClick={() =>
-                setBooking((b) => ({
-                  ...b,
-                  fromDate: filters.from,
-                  toDate: filters.to,
-                  startPeriod: filters.start || "09:00",
-                  endPeriod: filters.end || "18:00",
-                }))
-              }
+              onClick={handleCheckAvailability}
+              disabled={isSearching}
             >
               <Search className="h-4 w-4 mr-2" />{" "}
-              <span className="whitespace-nowrap">{t("Check Availability")}</span>
+              <span className="whitespace-nowrap">{isSearching ? t("Checking...") : t("Check Availability")}</span>
             </Button>
           </div>
         </div>
 
-        <div className="mt-6 flex items-center text-[#1e3a8a] font-bold text-sm cursor-pointer hover:underline w-fit">
+        <div 
+          className="mt-6 flex items-center text-[#1e3a8a] font-bold text-sm cursor-pointer hover:underline w-fit"
+          onClick={() => setShowMap(true)}
+        >
           <MapPin className="h-4 w-4 mr-1.5" /> {t("View Map Centers")}
         </div>
       </Card>
+
+      {/* Map Modal */}
+      <HallMapModal 
+        isOpen={showMap} 
+        onClose={() => setShowMap(false)} 
+        halls={displayedHalls} 
+        onSelect={onSelect}
+      />
 
       {/* List Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-6 gap-4">
@@ -203,17 +253,17 @@ export function HallList({
       </div>
 
       {/* Grid */}
-      {loadingHalls ? (
+      {loadingHalls || isSearching ? (
         <div className="flex justify-center items-center py-20 text-slate-500 font-medium">
-          {t("Loading halls...")}
+          {isSearching ? t("Searching available halls...") : t("Loading halls...")}
         </div>
-      ) : halls.length === 0 ? (
+      ) : displayedHalls.length === 0 ? (
         <div className="flex justify-center items-center py-20 text-slate-500 font-medium">
-          {t("No halls available")}
+          {availableHallIds ? t("No halls available for the selected dates and slots") : t("No halls available")}
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {halls.map((h) => (
+          {displayedHalls.map((h) => (
           <Card
             key={h.id}
             className="overflow-hidden bg-white/95 backdrop-blur-sm border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] transition-all rounded-[1.25rem] flex flex-col group"

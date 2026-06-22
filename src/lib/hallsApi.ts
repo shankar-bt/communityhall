@@ -14,12 +14,14 @@ export interface HallDetailsApi {
   halfDayRent: number;
   depositAmount: number;
   halfDepositAmount: number;
-  hallImagesList?: { hallImage?: string; imageContent?: string }[];
+  hallImagesList?: { hallImage?: string; imageUrl?: string; imageContent?: string }[];
   hallArea?: number;
   parkingCapacity?: number;
   gst?: number;
   ebCostPerUnit?: number;
   hallInchargeMobno?: string;
+  latitude?: string;
+  longitude?: string;
 }
 
 export async function fetchHalls(): Promise<HallDetailsApi[]> {
