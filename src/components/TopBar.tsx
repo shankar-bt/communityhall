@@ -5,7 +5,15 @@ import { Building2, LogOut, Menu } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import LanguageSwitch from "./LanguageSwitch";
 
-export function TopBar({ onLogout }: { onLogout?: () => void }) {
+export function TopBar({
+  onLogout,
+  onToggleSidebar,
+  onLogin,
+}: {
+  onLogout?: () => void;
+  onToggleSidebar?: () => void;
+  onLogin?: () => void;
+}) {
   const { t } = useLanguage();
   const { user } = useApp();
   const { fontSize, setFontSize } = useFontSize();
